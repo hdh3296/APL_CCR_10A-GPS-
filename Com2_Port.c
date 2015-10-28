@@ -114,6 +114,8 @@ unsigned int XorCal(unsigned char xor)
 	return(0);	
 }
 
+
+// GPS 수신 함수
 void Com2_Rx(void)
 {
    	unsigned char   buf;
