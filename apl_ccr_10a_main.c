@@ -105,59 +105,59 @@ void    PortInit(void)
 
 
 
-    CDS_TRIS = 1;
-    V_MON_TRIS = 1;
-    I_MON_TRIS = 1;
-    I_SET_TRIS = 1;
-    RA5_NC_TRIS = 1;
+    NoUse_CDS_TRIS = 1;
+    V_IN_TRIS = 1;
+    A_IN_TRIS = 1;
+    ISET_HI_TRIS = 1;
+    ISET_LO_TRIS = 1;
 
-    MODE0_TRIS = 1;
-    MODE1_TRIS = 1;
-    MODE2_TRIS = 1;
-    MODE3_TRIS = 1;
-    MODE4_TRIS = 1;
-    MODE5_TRIS = 1;
+    NIGHT_IN_TRIS = 1;
+    SAVE_HI_TRIS = 1;
+    SAVE_LO_TRIS = 1;
+    NoUse_MODE3_TRIS = 1;
+    NoUse_MODE4_TRIS = 1;
+    NoUse_MODE5_TRIS = 1;
     PGC_TRIS = 1;
     PGD_TRIS = 1;
 
 
-    MODE6_TRIS = 1;
-    MODE7_TRIS = 1;
-    FORCE_TRIS = 0;
-    INVALID_TRIS = 0;
-    RC4_NC_TRIS = 1;
-    RUNLED2_TRIS = 0;
-    TX1_TRIS = 0;
-    RX1_TRIS = 1;
+    NoUse_MODE6_TRIS = 1;
+    NoUse_MODE7_TRIS = 1;
+    NoUse_FORCE_TRIS = 0;
+    NoUse_INVALID_TRIS = 0;
+    NoUse_RC4_TRIS = 1;
+    LED_RUN2_TRIS = 0;
+    NoUse_TX1_TRIS = 0;
+    NoUse_RX1_TRIS = 1;
 
 
     LED_ON_TRIS = 0;
-    EX2_ON_TRIS = 0;
-    GPS_ON_TRIS = 0;
-    RUNLED0_TRIS = 0;
+    NoUse_EX2_ON_TRIS = 0;
+    NoUse_GPS_ON_TRIS = 0;
+    LED_RUN0_TRIS = 0;
     PWM_TRIS = 0;
-    RUNLED1_TRIS = 0;
-    TX2_TRIS = 0;
-    RX2_TRIS = 1;
+    LED_RUN1_TRIS = 0;
+    NoUse_TX2_TRIS = 0;
+    TX_DP_TRIS = 1;
 
 
     PPS_TRIS = 1;
-    OPTION_TRIS = 1;
-    M3_TRIS = 1;
+    NoUse_OPTION_TRIS = 1;
+    NoUse_M3_TRIS = 1;
 
 
 
     _LAMP_ON = 0;
     _PWM = 0;
-    NC_GPS_ON = 1;
-    FORCE = 0;  //??????
-    INVALID = 1;
-    NC_EX2_ON = 0;
+    NoUse_GPS_ON = 1;
+    NoUse_FORCE = 0;  //??????
+    NoUse_INVALID = 1;
+    NoUse_EX2_ON = 0;
     _LED_GpsGoodState = 1;
     _LED_AplLampState = 1;
-    RUNLED2 = 1;
-    TX2 = 1;
-    TX1 = 1;
+    _LED_RUN2 = 1;
+    NoUse_TX2 = 1;
+    NoUse_TX1 = 1;
 }
 
 
@@ -248,19 +248,19 @@ void LedBlinkModeInit(void)
 
 unsigned int ReSettingDayNigntChk(void)
 {
-    if (MODE5)
+    if (NoUse_MODE5)
     {
         SettingReadyTime = 0;
         NightDaySetTime = 0;
         bNightDay = 0;
         NightSetTime = 0;
         bNight = 0;
-        RUNLED2 = 1;
+        _LED_RUN2 = 1;
         return(0);
     }
 
 
-    if (!MODE7 && MODE6)
+    if (!NoUse_MODE7 && NoUse_MODE6)
     {
         if ((NightSetTime > 5) && (!bNight))
         {
@@ -269,9 +269,9 @@ unsigned int ReSettingDayNigntChk(void)
             CompanyWrite();
             LoadSetupValue();
         }
-        if (bNight)	RUNLED2 = 0;
+        if (bNight)	_LED_RUN2 = 0;
     }
-    else if (!MODE6 && MODE7)
+    else if (!NoUse_MODE6 && NoUse_MODE7)
     {
         if ((NightDaySetTime > 5) && (!bNightDay))
         {
@@ -280,7 +280,7 @@ unsigned int ReSettingDayNigntChk(void)
             CompanyWrite();
             LoadSetupValue();
         }
-        if (bNightDay)	RUNLED2 = 0;
+        if (bNightDay)	_LED_RUN2 = 0;
     }
     else
     {
@@ -292,7 +292,7 @@ unsigned int ReSettingDayNigntChk(void)
 
         if (SettingReadyTime > 4)
         {
-            RUNLED2 = !RUNLED2;
+            _LED_RUN2 = !_LED_RUN2;
             SettingReadyTime = 0;
         }
     }
@@ -311,11 +311,11 @@ void ModeChk(void)
 
 	modesw=0;
 
-	if( !MODE0)	modesw=(modesw | 0x01);
-	if( !MODE1)	modesw=(modesw | 0x02);
-	if( !MODE2)	modesw=(modesw | 0x04);
-	if( !MODE3)	modesw=(modesw | 0x08);
-	if( !MODE4)	modesw=(modesw | 0x10);
+	if( !NIGHT_IN)	modesw=(modesw | 0x01);
+	if( !SAVE_HI)	modesw=(modesw | 0x02);
+	if( !SAVE_LO)	modesw=(modesw | 0x04);
+	if( !NoUse_MODE3)	modesw=(modesw | 0x08);
+	if( !NoUse_MODE4)	modesw=(modesw | 0x10);
 
 
 	if( (modesw & 0x1f) != (befmodesw & 0x1f)){
@@ -503,7 +503,7 @@ void ActiveOnChk(void)
 void MyApplication(void)
 {
 	ActiveOnChk();
-	if(bActiveOn || !MODE5){
+	if(bActiveOn || !NoUse_MODE5){
 		if(!bPwmOn)	PwmOn();
 
 		if(An2_Update && An3_Update){
@@ -603,7 +603,7 @@ void MyApplication(void)
 			MainTimer=0;
 			WakeupTime=0;
 			_LED_GpsGoodState=1;
-			RUNLED2=1;
+			_LED_RUN2=1;
 
 			SLEEP();
 		}
