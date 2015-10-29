@@ -102,9 +102,6 @@ void    PortInit(void)
     LATD = 0xff;
     LATE = 0xff;
 
-
-
-
     NoUse_CDS_TRIS = 1;
     V_IN_TRIS = 1;
     A_IN_TRIS = 1;
@@ -120,7 +117,6 @@ void    PortInit(void)
     PGC_TRIS = 1;
     PGD_TRIS = 1;
 
-
     NoUse_MODE6_TRIS = 1;
     NoUse_MODE7_TRIS = 1;
     NoUse_FORCE_TRIS = 0;
@@ -129,7 +125,6 @@ void    PortInit(void)
     LED_RUN2_TRIS = 0;
     NoUse_TX1_TRIS = 0;
     NoUse_RX1_TRIS = 1;
-
 
     LED_ON_TRIS = 0;
     NoUse_EX2_ON_TRIS = 0;
@@ -140,7 +135,6 @@ void    PortInit(void)
     NoUse_TX2_TRIS = 0;
     TX_DP_TRIS = 1;
 
-
     PPS_TRIS = 1;
     NoUse_OPTION_TRIS = 1;
     NoUse_M3_TRIS = 1;
@@ -150,12 +144,12 @@ void    PortInit(void)
     _LAMP_ON = 0;
     _PWM = 0;
     NoUse_GPS_ON = 1;
-    NoUse_FORCE = 0;  //??????
+    NoUse_FORCE = 0;  // ??????
     NoUse_INVALID = 1;
     NoUse_EX2_ON = 0;
-    _LED_GpsGoodState = 1;
-    _LED_AplLampState = 1;
-    _LED_RUN2 = 1;
+    _LED_GpsGoodState = 1;	// 1 : Led Off
+    _LED_AplLampState = 1;	// 1 : Led Off
+    _LED_RUN2 = 1;			// 1 : Led Off
     NoUse_TX2 = 1;
     NoUse_TX1 = 1;
 }
