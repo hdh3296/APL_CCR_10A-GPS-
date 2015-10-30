@@ -490,8 +490,8 @@ void ActiveOnChk(void)
 		_LED_GpsGoodState=1;
 	}
 
-	if(An0_Update){
-		An0_Update=0;
+	if(bAn0_Update){
+		bAn0_Update=0;
 		if(WakeupTime < 200) WakeupTime++;
 	}
 }
@@ -504,9 +504,9 @@ void ApaLampOnOff(void)
 	if(bActiveOn || !NoUse_MODE5){
 		if(!bPwmOn)	PwmOn();
 
-		if(An2_Update && An3_Update){
-			An2_Update=0;
- 			An3_Update=0;
+		if(bAn2_Update && bAn3_Update){
+			bAn2_Update=0;
+ 			bAn3_Update=0;
 
 			if(AdValue[2] < AdValue[3]){
 				if(dutycycle < 0x3ff)	dutycycle++;
@@ -596,7 +596,7 @@ void ApaLampOnOff(void)
 		_LED_AplLampState=1;
 
 		if(WakeupTime > 0){
-			An0_Update=0;
+			bAn0_Update=0;
 			CLRWDT();
 			MainTimer=0;
 			WakeupTime=0;
@@ -622,10 +622,10 @@ void ApaLampOnOff(void)
         if (!bPwmOn)
             PwmOn();
 
-        if (An2_Update && An3_Update)
+        if (bAn2_Update && bAn3_Update)
         {
-            An2_Update = 0;
-            An3_Update = 0;
+            bAn2_Update = 0;
+            bAn3_Update = 0;
 			// Ad2 와 Ad3 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다. 
             if (AdValue[2] < AdValue[3])
             {

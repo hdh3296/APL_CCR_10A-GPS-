@@ -5,14 +5,14 @@ extern	unsigned char	ADConversionChk(void);
 
 extern	bit	bAdConversion;
 
-extern	bit	An0_Update;
-extern	bit	An1_Update;
-extern	bit	An2_Update;
-extern	bit	An3_Update;
-extern	bit	An4_Update;
-extern	bit	An5_Update;
-extern	bit	An6_Update;
-extern	bit	An7_Update;
+extern	bit	bAn0_Update;
+extern	bit	bAn1_Update;
+extern	bit	bAn2_Update;
+extern	bit	bAn3_Update;
+extern	bit	bAn4_Update;
+extern	bit	bAn5_Update;
+extern	bit	bAn6_Update;
+extern	bit	bAn7_Update;
 
 extern	unsigned	long    SumAD;
 extern	unsigned 	long    InPutAD;

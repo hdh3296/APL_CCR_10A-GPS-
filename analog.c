@@ -4,7 +4,7 @@
 
 
 #define	AD_SUMCNT		10
-#define	AD_MAX_CHANEL	4
+#define	nAD_MAX_CHANEL	7
 
 #ifndef	TRUE
 #define	TRUE	1
@@ -14,14 +14,14 @@
 #endif
 
 
-bit	An0_Update = 0;
-bit	An1_Update = 0;
-bit	An2_Update = 0;
-bit	An3_Update = 0;
-bit	An4_Update = 0;
-bit	An5_Update = 0;
-bit	An6_Update = 0;
-bit	An7_Update = 0;
+bit	bAn0_Update = 0;
+bit	bAn1_Update = 0;
+bit	bAn2_Update = 0;
+bit	bAn3_Update = 0;
+bit	bAn4_Update = 0;
+bit	bAn5_Update = 0;
+bit	bAn6_Update = 0;
+bit	bAn7_Update = 0;
 
 bit	bAdConversion = 0;
 
@@ -29,10 +29,10 @@ unsigned	long    SumAD	= 0;
 unsigned 	long    InPutAD = 0;
 unsigned 	int	    ADBuf 	= 0;
 unsigned	int	    SumCnt	= 0;
-unsigned    char    AdChSel	= 0;
+unsigned    int   	AdChSel	= 0;
 
 
-unsigned    int     AdValue[AD_MAX_CHANEL]; // 채널별 Ad 값 저장 버퍼 
+unsigned    int     AdValue[nAD_MAX_CHANEL]; // 채널별 Ad 값 저장 버퍼 
 
 
 
@@ -55,14 +55,16 @@ void	AnalogInit(void)
 
     DONE = 1;
 
-    An0_Update = 0;
-    An1_Update = 0;
-    An2_Update = 0;
-    An3_Update = 0;
-    An4_Update = 0;
-    An5_Update = 0;
-    An6_Update = 0;
-    An7_Update = 0;
+    bAn0_Update = 0;
+    bAn1_Update = 0;
+    bAn2_Update = 0;
+    bAn3_Update = 0;
+    bAn4_Update = 0;
+    bAn5_Update = 0;
+    bAn6_Update = 0;
+    bAn7_Update = 0;
+
+	AdChSel = 3; // 채널 초기값 : 3 채널  
 }
 
 
@@ -82,81 +84,27 @@ void ADRead(void)
     AdValue[AdChSel] = (unsigned int)(LongBuf);
     switch (AdChSel)
     {
-    case    0: // AN0
-        An0_Update = 1;
-        AdChSel = 1;
-        if (AdChSel < AD_MAX_CHANEL)
-        {
-            CHS2 = 0;
-            CHS1 = 0;
-            CHS0 = 1;
-        }
-        break;
-    case    1: // AN1
-        An1_Update = 1;
-        AdChSel = 2;
-        if (AdChSel < AD_MAX_CHANEL)
-        {
-            CHS2 = 0;
-            CHS1 = 1;
-            CHS0 = 0;
-        }
-        break;
-    case    2: // AN2
-        An2_Update = 1;
-        AdChSel = 3;
-        if (AdChSel < AD_MAX_CHANEL)
-        {
-            CHS2 = 0;
-            CHS1 = 1;
-            CHS0 = 1;
-        }
-        break;
-    case    3: // AN3
-        An3_Update = 1;
-        CHS2 = 0;
+    case    3: // AN3 : VR(볼륨)1 값 읽기 용(High) 
+        bAn3_Update = TRUE;
+        CHS2 = 1;
         CHS1 = 0;
         CHS0 = 0;
-        AdChSel = 0;
-
-
-        /*
-        			AdChSel=4;
-        			if(AdChSel < AD_MAX_CHANEL){
-        				CHS2=1;
-        				CHS1=0;
-        				CHS0=0;
-        			AdChSel=0;
-        			}
-        */
+        AdChSel = 4;
         break;
-    case    4:		// AN4
-        An4_Update = 1;
-        AdChSel = 5;
-        if (AdChSel < AD_MAX_CHANEL)
-        {
-            CHS2 = 0;
-            CHS1 = 0;
-            CHS0 = 0;
-            AdChSel = 0;
-        }
+    case    4: // AN4 : VR(볼륨)2 값 읽기 용(Low) 
+        bAn4_Update = TRUE;
+        CHS2 = 0;
+        CHS1 = 1;
+        CHS0 = 1;
+        AdChSel = 3;
         break;
     default:
         CHS2 = 0;
-        CHS1 = 0;
-        CHS0 = 0;
-        AdChSel = 0;
+        CHS1 = 1;
+        CHS0 = 1;
+        AdChSel = 3;
         break;
     }
-
-    /*
-    	if( AdChSel >= AD_MAX_CHANEL){
-    		CHS2=0;
-    		CHS1=0;
-    		CHS0=0;
-    		AdChSel=0;
-    	}
-    */
 }
 
 
