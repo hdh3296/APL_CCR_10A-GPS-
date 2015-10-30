@@ -106,7 +106,7 @@ void  Initial(void)
   	SWDTEN=0;	    // software watchdog timer enable.......(disable)
 
 // RCON Register
-  	IPEN=0;	    // interrupt priority enable............(disable)?????
+  	IPEN=0;	    // interrupt priority enable............(disable)??????
   	RI=0;	        // RESET instruction status
   	TO=0;	        // watchdog timeout flag
   	PD=0;	        // power-down detection
@@ -125,7 +125,7 @@ void  Initial(void)
 // 	
 
 	T1CONbits.RD16=1;	// 16 Bit Read/Write Enable
- 	T1CONbits.SOSCEN=1;  /////////?????????????????
+ 	T1CONbits.SOSCEN=1;  /////////?????????????
 	nT1SYNC=0;
 	TMR1CS0=0;
 	TMR1CS1=0;

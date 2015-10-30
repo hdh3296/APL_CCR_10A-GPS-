@@ -37,7 +37,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NoUse_RX1	 			RC7	// CANRX/RX1/DT1/CCP4
 
 #define LED_ON 					RD0
-#define _LAMP_ON				LED_ON 		
+#define _aplLAMP_ON				LED_ON // APL Lamp On/Off  		
 #define NoUse_EX2_ON 			RD1	
 #define NoUse_GPS_ON 			RD2	
 #define LED_RUN0 				RD3
@@ -143,9 +143,11 @@ extern void  Serial2Check(void);
 extern void GpsPPS1Chk(void);
 extern void LedBlinkModeInit(void);
 extern unsigned int ReSettingDayNigntChk(void);
-extern void MyApplication(void);
-extern bit IsAplLamp_On();
-extern void GpsRx2DataProc();
+extern void ApaLampOnOff(void);
+extern bit IsAplLamp_On(void);
+extern void GpsRx2DataProc(void);
+extern bit IsNight(void);
+
 
 
 

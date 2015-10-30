@@ -23,18 +23,18 @@ extern  void  Initial(void);
 #define	FALSE	0
 #endif
 
-#ifndef	ON_APLLAMP
-#define	ON_APLLAMP	1
+#ifndef	ON_lamp
+#define	ON_lamp	1
 #endif
-#ifndef	OFF_APLLAMP
-#define	OFF_APLLAMP	0
+#ifndef	OFF_lamp
+#define	OFF_lamp	0
 #endif
 
-#ifndef	ON_RUNLED1
-#define	ON_RUNLED1	0
+#ifndef	ON_runled1
+#define	ON_runled1	0
 #endif
-#ifndef	OFF_RUNLED1
-#define	OFF_RUNLED1	1
+#ifndef	OFF_runled1
+#define	OFF_runled1	1
 #endif
 
 
@@ -84,7 +84,9 @@ bit		bPPS_Edge = 0;
 bit		bNight = 0;
 bit		bNightDay = 0;
 
-bit		bAplLamp_On = 0;
+bit		bAplLamp_OnEnab = 0;
+
+bit		bNight;
 
 
 void    PortInit(void)
@@ -140,10 +142,10 @@ void    PortInit(void)
 
 
 
-    _LAMP_ON = 0;
+    _aplLAMP_ON = 0;
     _PWM = 0;
     NoUse_GPS_ON = 1;
-    NoUse_FORCE = 0;  // ??????
+    NoUse_FORCE = 0;  // ????
     NoUse_INVALID = 1;
     NoUse_EX2_ON = 0;
     _LED_GpsGoodState = 1;	// 1 : Led Off
@@ -208,7 +210,7 @@ void  Serial2Check(void)
 
 
 // GPS 에서 수신된 펄스를 체크한다.
-// ??? 1초마다 High 값이 수신된다.
+// 1초마다 High 값이 수신된다.
 // High Edge 값을 체크한다.
 void GpsPPS1Chk(void)
 {
@@ -496,7 +498,7 @@ void ActiveOnChk(void)
 
 
 
-void MyApplication(void)
+void ApaLampOnOff(void)
 {
 	ActiveOnChk();
 	if(bActiveOn || !NoUse_MODE5){
@@ -611,10 +613,11 @@ void MyApplication(void)
 
 
 // APL Lamp 출력 함수이다.
-void MyApplication(void)
+void ApaLampOnOff(void)
 {
-	// bAplLamp_On 상태에서 PWM 출력을 내보내면 LAMP에 실제로 불이 켜진다.  
-    if (bAplLamp_On)	
+	// bAplLamp_OnEnab 상태 (-On듀티상태-)에서 
+	// _aplLAMP_ON 및 PWM 출력을 내보내면 LAMP에 실제로 불이 켜진다.  
+    if (bAplLamp_OnEnab)	
     {
         if (!bPwmOn)
             PwmOn();
@@ -623,7 +626,7 @@ void MyApplication(void)
         {
             An2_Update = 0;
             An3_Update = 0;
-
+			// Ad2 와 Ad3 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다. 
             if (AdValue[2] < AdValue[3])
             {
                 if (dutycycle < 0x3ff)	dutycycle++;
@@ -639,9 +642,9 @@ void MyApplication(void)
             }
         }
 
-        _LAMP_ON = ON_APLLAMP;
+        _aplLAMP_ON = ON_lamp;
         bPwmOn = TRUE;
-        _LED_AplLampState = ON_RUNLED1;
+        _LED_AplLampState = ON_runled1;
 
     }
     else
@@ -654,15 +657,15 @@ void MyApplication(void)
         }
         bPwmOn = FALSE;
         _PWM = 0;
-        _LAMP_ON = OFF_APLLAMP;
-        _LED_AplLampState = OFF_RUNLED1;
+        _aplLAMP_ON = OFF_lamp;
+        _LED_AplLampState = OFF_runled1;
     }
 }
 
 // GPS 펄스에 의한 엣지가 생기면 !
 // msec 값을 999으로 변경하고
 // GPS 시,분,초 변수값에 시간을 저장한다.
-bit IsAplLamp_On()
+bit IsAplLamp_On(void)
 {
     static bit bAplLamp_On;
 
@@ -725,7 +728,7 @@ bit IsAplLamp_On()
 
 // GPS RX2 통신 값을 받아서 Com1TxBuffer로 넘겨준다.
 // GPS 수신 Good 신호를 받으면, 시,분,초 변수에 각각 저장한다.
-void GpsRx2DataProc()
+void GpsRx2DataProc(void)
 {
     unsigned int i;
 
@@ -761,6 +764,14 @@ void GpsRx2DataProc()
     Com1TxStart();
 }
 
+
+bit IsNight(void)
+{
+	static bit bNight;
+	
+	
+	return bNight;
+}
 
 void main(void)
 {
@@ -803,11 +814,11 @@ void main(void)
         CLRWDT();
 
 //		ReSettingDayNigntChk();
-//		ModeChk();
+		bNight = IsNight();
 
         GpsPPS1Chk(); // GPS Puls 체크 
         ADConversionChk();
-        MyApplication();
+        ApaLampOnOff();
 
         if (Com2RxStatus == RX_GOOD) // GPS RX2 통신 GOOD !
         {
@@ -841,7 +852,7 @@ void interrupt isr(void)
         TMR0L = MSEC_L;
         TMR0H = MSEC_H;
 
-        bAplLamp_On = IsAplLamp_On();
+        bAplLamp_OnEnab = IsAplLamp_On();
 
         Com1SerialTime++;
         Com2SerialTime++;
@@ -915,7 +926,7 @@ void interrupt isr(void)
         if (!bAdConversion)
         {
             ADBuf = ADRES;
-            bAdConversion = 1;
+            bAdConversion = TRUE;
         }
         DONE = 0;
     }
