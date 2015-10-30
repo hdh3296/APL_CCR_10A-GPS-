@@ -137,6 +137,16 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define     MSEC_H    0xfc
 #define     MSEC_L    0x18
 
+extern void    PortInit(void);
+extern void    UserBaudRate(void);
+extern void  Serial2Check(void);
+extern void GpsPPS1Chk(void);
+extern void LedBlinkModeInit(void);
+extern unsigned int ReSettingDayNigntChk(void);
+extern void MyApplication(void);
+extern bit IsAplLamp_On();
+extern void GpsRx2DataProc();
+
 
 
 

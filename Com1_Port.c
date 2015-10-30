@@ -7,10 +7,10 @@
 #include    "MyUtil.h"
 
 
-unsigned char	Com1TxBuffer[COM1_MAX_TX_BUF];
-unsigned char	Com1RxBuffer[COM1_MAX_RX_BUF];
-unsigned char	Com1TxCnt = 0;
-unsigned char	Com1TxThisPt = 0;
+unsigned char	Com1TxBuffer[nCOM1_MAX_TX_BUF];
+unsigned char	Com1RxBuffer[nCOM1_MAX_RX_BUF];
+unsigned char	Com1TxTotalCnt = 0;
+unsigned char	Com1TxCurCnt = 0;
 unsigned char   Com1RxStatus = 0;
 unsigned char	Com1RxCurCnt = 0;
 unsigned char	Com1SerialTime = 0x0;
@@ -44,44 +44,42 @@ void    Com1_Init(void)
 }
 
 
-
+	
 void    Com1TxStart(void)
 {
     Com1RxStatus = TX_SET;
-    TXREG1 = Com1TxBuffer[Com1TxThisPt];
-    Com1TxThisPt++;
+    TXREG1 = Com1TxBuffer[Com1TxCurCnt];
+    Com1TxCurCnt++;
     TX1IE = 1;
 }
 
 
-
-
 void Com1_Tx(void)
 {
-    if ((Com1TxThisPt >= Com1TxCnt))
-    {
-        Com1SerialTime = 0;
-        Com1TxThisPt = 0;
-        Com1TxCnt = 0;
-        TX1IE = 0;
-    }
-    else
+    if ((Com1TxCurCnt < Com1TxTotalCnt))
     {
 
-        if (Com1TxThisPt >= COM1_MAX_TX_BUF)
+        if (Com1TxCurCnt < nCOM1_MAX_TX_BUF)
         {
-            Com1SerialTime = 0;
-            Com1TxThisPt = 0;
-            Com1TxCnt = 0;
-            TX1IE = 0;
-        }
-        else
-        {
-            TXREG1 = Com1TxBuffer[Com1TxThisPt];
-            Com1TxThisPt++;
+            TXREG1 = Com1TxBuffer[Com1TxCurCnt];
+            Com1TxCurCnt++;
             Com1SerialTime = 0;
             Com1RxStatus = TX_SET;
         }
+        else
+        {			
+            Com1SerialTime = 0;
+            Com1TxCurCnt = 0;
+            Com1TxTotalCnt = 0;
+            TX1IE = 0;
+        }
+    }	
+    else 
+    {
+        Com1SerialTime = 0;
+        Com1TxCurCnt = 0;
+        Com1TxTotalCnt = 0;
+        TX1IE = 0;
     }
 }
 
@@ -108,7 +106,7 @@ void Com1_Rx(void)
 
         Com1RxBuffer[Com1RxCurCnt] = buf;
 
-        if (Com1RxCurCnt < (COM1_MAX_RX_BUF - 1))
+        if (Com1RxCurCnt < (nCOM1_MAX_RX_BUF - 1))
         {
             Com1RxCurCnt++;
         }

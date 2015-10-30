@@ -115,14 +115,14 @@ unsigned int XorCal(unsigned char xor)
 }
 
 
-// GPS 수신 함수
+// GPS Rx2 통신 함수 
 void Com2_Rx(void)
 {
    	unsigned char   buf;
    	unsigned char   temp;
 
 
-   	buf=RCREG2;
+   	buf = RCREG2;
 
     if(Com2RxStatus != TX_SET){   
 

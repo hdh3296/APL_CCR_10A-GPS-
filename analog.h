@@ -18,8 +18,12 @@ extern	unsigned	long    SumAD;
 extern	unsigned 	long    InPutAD;
 extern	unsigned 	int	    ADBuf;
 extern	unsigned	int	    SumCnt;
-extern	unsigned    char    AdSel;
+extern	unsigned    char    AdChSel;
 
 extern	unsigned    int     AdValue[];
+
+
+
+
 
 

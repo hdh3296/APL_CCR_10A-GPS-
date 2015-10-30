@@ -63,8 +63,8 @@ unsigned    char	WakeupTime = 0;
 unsigned	char	modesw = 0;
 unsigned	int		rx_hour = 0, rx_min = 0, rx_sec = 0;
 unsigned	int		OnTime[LED_ONOFF_CNT];
-unsigned	int		Led_CycleMsec;
-unsigned	int		Led_OnDutyMsec;
+unsigned	int		LedCycle_Msec;
+unsigned	int		LedOnDuty_Msec;
 unsigned	long	ZeroTimer = 0;
 unsigned	long	l_hour, l_min, l_sec;
 
@@ -73,7 +73,6 @@ unsigned    char	NightVolt = 0;
 unsigned    char	NightDayVolt = 0;
 
 
-bit   	TX_EN;
 bit   	FeedbackOn = 0;
 
 bit   	bActiveOn = 0;
@@ -202,13 +201,16 @@ void  Serial2Check(void)
 }
 
 /*
-   			Com1TxThisPt=0;
- 			Com1TxCnt=(Com1TxCnt+2);
+   			Com1TxCurCnt=0;
+ 			Com1TxTotalCnt=(Com1TxTotalCnt+2);
 			Com1TxStart();
 */
 
 
-void PPS1Chk(void)
+// GPS 에서 수신된 펄스를 체크한다.
+// ??? 1초마다 High 값이 수신된다.
+// High Edge 값을 체크한다.
+void GpsPPS1Chk(void)
 {
     if (_PPS)
     {
@@ -234,7 +236,7 @@ void LedBlinkModeInit(void)
     for (i = 0;i < LED_ONOFF_CNT;i++)
     {
         OnTime[i] = 0x0;
-        Led_CycleMsec = 0;
+        LedCycle_Msec = 0;
     }
 }
 
@@ -319,21 +321,21 @@ void ModeChk(void)
 		switch(i){
 			case	0:
 				OnTime[0]  		=1000;
-				Led_CycleMsec	=4000;
+				LedCycle_Msec	=4000;
 				break;
 			case	1:
 				OnTime[0]  		=1000;
-				Led_CycleMsec	=5000;
+				LedCycle_Msec	=5000;
 				break;
 			case	2:
 				OnTime[0]  		=1000;
-				Led_CycleMsec	=6000;
+				LedCycle_Msec	=6000;
 				break;
 			case	3:
 				OnTime[0]  		=500;
 				OnTime[1]  		=1000;
 				OnTime[2]  		=1500;
-				Led_CycleMsec	=6000;
+				LedCycle_Msec	=6000;
 				break;
 			case	4:						// 7s
 				OnTime[0]  		=500;
@@ -341,7 +343,7 @@ void ModeChk(void)
 				OnTime[2]  		=1500;
 				OnTime[3]  		=2000;
 				OnTime[4]  		=2500;
-				Led_CycleMsec	=7000;
+				LedCycle_Msec	=7000;
 				break;
 			case	5:						// 8s
 				OnTime[0]  		=500;
@@ -351,7 +353,7 @@ void ModeChk(void)
 				OnTime[4]  		=2500;
 				OnTime[5]  		=3000;
 				OnTime[6]  		=3500;
-				Led_CycleMsec	=8000;
+				LedCycle_Msec	=8000;
 				break;
 			case	6:						// 20s-5
 				OnTime[0]  		=500;
@@ -363,23 +365,23 @@ void ModeChk(void)
 				OnTime[6]  		=3500;
 				OnTime[7]  		=4000;
 				OnTime[8]  		=4500;
-				Led_CycleMsec	=20000;
+				LedCycle_Msec	=20000;
 				break;
 			case	7:						// 5s-2
 				OnTime[0]  		=500;
 				OnTime[1]  		=1000;
 				OnTime[2]  		=1500;
-				Led_CycleMsec	=5000;
+				LedCycle_Msec	=5000;
 				break;
 			case	8:						// 10s-2
 				OnTime[0]  		=500;
 				OnTime[1]  		=1000;
 				OnTime[2]  		=1500;
-				Led_CycleMsec	=10000;
+				LedCycle_Msec	=10000;
 				break;
 			case	9:						// Q
 				OnTime[0]  		=500;
-				Led_CycleMsec	=1000;
+				LedCycle_Msec	=1000;
 				break;
 			case	10:						// Q3-10s
 				OnTime[0]  		=500;
@@ -387,7 +389,7 @@ void ModeChk(void)
 				OnTime[2]  		=1500;
 				OnTime[3]  		=2000;
 				OnTime[4]  		=2500;
-				Led_CycleMsec	=1000;
+				LedCycle_Msec	=1000;
 				break;
 			case	11:						// Q6 + LF115s
 				OnTime[0]  		=500;
@@ -403,7 +405,7 @@ void ModeChk(void)
 				OnTime[10]  	=5500;
 				OnTime[11]  	=6000;
 				OnTime[12]  	=8000;
-				Led_CycleMsec 	=15000;
+				LedCycle_Msec 	=15000;
 				break;
 			case	12:						// Q9 + 15s
 				OnTime[0]  		=500;
@@ -423,41 +425,41 @@ void ModeChk(void)
 				OnTime[14]  	=7500;
 				OnTime[15]  	=8000;
 				OnTime[16]  	=8500;
-				Led_CycleMsec 	=15000;
+				LedCycle_Msec 	=15000;
 				break;
 			case	13:						// Mo(A)8s
 				OnTime[0]  		=500;
 				OnTime[1]  		=1000;
 				OnTime[2]  		=3000;
-				Led_CycleMsec 	=8000;
+				LedCycle_Msec 	=8000;
 				break;
 			case	14:						// LF1_10s
 				OnTime[0]  		=2000;
-				Led_CycleMsec 	=10000;
+				LedCycle_Msec 	=10000;
 				break;
 			case	15:						// F
 				OnTime[0]  		=10000;
-				Led_CycleMsec 	=10000;
+				LedCycle_Msec 	=10000;
 				break;
 			case	17:						// isow4s
 				OnTime[0]  		=1000;
-				Led_CycleMsec 	=4000;
+				LedCycle_Msec 	=4000;
 				break;
 			case	18:						// isow6s
 				OnTime[0]  		=1000;
-				Led_CycleMsec 	=6000;
+				LedCycle_Msec 	=6000;
 				break;
 			case	19:						// isow8s
 				OnTime[0]  		=1000;
-				Led_CycleMsec 	=8000;
+				LedCycle_Msec 	=8000;
 				break;
 			case	20:						// isow10s
 				OnTime[0]  		=1000;
-				Led_CycleMsec 	=10000;
+				LedCycle_Msec 	=10000;
 				break;
 			default:
 				OnTime[0]  		=0;
-				Led_CycleMsec 	=10000;
+				LedCycle_Msec 	=10000;
 				break;
 		}
 	}
@@ -611,12 +613,12 @@ void MyApplication(void)
 // APL Lamp 출력 함수이다.
 void MyApplication(void)
 {
-
-    if (bAplLamp_On)	// 램프 on Enable
+	// bAplLamp_On 상태에서 PWM 출력을 내보내면 LAMP에 실제로 불이 켜진다.  
+    if (bAplLamp_On)	
     {
-        if (!bPwmOn)	
-			PwmOn();
-		
+        if (!bPwmOn)
+            PwmOn();
+
         if (An2_Update && An3_Update)
         {
             An2_Update = 0;
@@ -657,11 +659,111 @@ void MyApplication(void)
     }
 }
 
+// GPS 펄스에 의한 엣지가 생기면 !
+// msec 값을 999으로 변경하고
+// GPS 시,분,초 변수값에 시간을 저장한다.
+bit IsAplLamp_On()
+{
+    static bit bAplLamp_On;
 
-void main(void)
+    if (bPPS_Edge && bPPS_On)
+    {
+        bPPS_Edge = FALSE;
+        if (rx_sec == 59)
+        {
+            Gm1 = 999;
+            Gsec = rx_sec;
+            Gmin = rx_min;
+            Ghour = rx_hour;
+            rx_sec = 0;
+        }
+    }
+
+    Gm1++;
+    // msec 가 1000(1초)이면 시간 값(초,분,시)을 1씩 증가 시킨다.
+    if (Gm1 >= 1000)
+    {
+        Gm1 = 0;
+        Gsec++;
+        if (Gsec >= 60)
+        {
+            Gsec = 0;
+            Gmin++;
+            if (Gmin >= 60)
+            {
+                Gmin = 0;
+                Ghour++;
+                if (Ghour >= 24)
+                {
+                    Ghour = 0;
+                }
+            }
+        }
+    }
+
+
+    if (Gm1 == 0)
+    {
+        ZeroTimer = (unsigned long)((unsigned long)Ghour * (unsigned long)3600000);
+        ZeroTimer = ZeroTimer + (unsigned long)((unsigned long)Gmin  * (unsigned long)60000);
+        ZeroTimer = ZeroTimer + (unsigned long)((unsigned long)Gsec  * (unsigned long)1000);
+    }
+
+    Gmsec60000 = (unsigned int)((ZeroTimer + (unsigned long)Gm1) % (unsigned long)LedCycle_Msec);
+
+    if (Gmsec60000 < LedOnDuty_Msec)
+    {
+        bAplLamp_On = TRUE; // APL LAMP ON
+    }
+    else
+    {
+        bAplLamp_On = FALSE;  // APL LAMP off
+    }
+
+    return bAplLamp_On;
+}
+
+// GPS RX2 통신 값을 받아서 Com1TxBuffer로 넘겨준다.
+// GPS 수신 Good 신호를 받으면, 시,분,초 변수에 각각 저장한다.
+void GpsRx2DataProc()
 {
     unsigned int i;
 
+    if (Com2RxBuffer[18] == 'A') // GPS 수신 GOOD !
+    {
+        _LED_GpsGoodState = !_LED_GpsGoodState; // GPS 수신 GOOD 상태 LED
+        i = (Com2RxBuffer[7] - 0x30) * 10;
+        i = (Com2RxBuffer[8] - 0x30) + i;
+        rx_hour = i;
+
+        i = (Com2RxBuffer[9]  - 0x30) * 10;
+        i = (Com2RxBuffer[10] - 0x30) + i;
+        rx_min = i;
+
+        i = (Com2RxBuffer[11] - 0x30) * 10;
+        i = (Com2RxBuffer[12] - 0x30) + i;
+        rx_sec = i;
+    }
+
+    for (i = 0; i < Com2RxCurCnt; i++)
+        Com1TxBuffer[i] = Com2RxBuffer[i];
+
+    // msec 값 3자리를 각각 Tx버퍼에 저장
+    i = (Gm1 % 100);
+    Com1TxBuffer[14] = (unsigned char)((Gm1 / 100) + 0x30);
+    Com1TxBuffer[15] = (unsigned char)((i / 10) + 0x30);
+    Com1TxBuffer[16] = (unsigned char)((i % 10) + 0x30);
+
+    Com2RxBuffer[18] = 0x0;
+
+    Com1TxCurCnt = 0;
+    Com1TxTotalCnt = Com2RxCurCnt;
+    Com1TxStart();
+}
+
+
+void main(void)
+{
     di();
     Initial();
     PortInit();
@@ -680,82 +782,49 @@ void main(void)
 
     modesw = 0xff;
     LedBlinkModeInit();
-	
+
     MainTimer = 0;
     msec100 = 0;
     Com1SerialTime = 0;
-    TX_EN = 0;
     Com1RxStatus = STX_CHK;
     dutycycle = 0x1ff;
     Update_Pwm();
 
-// LED 깜빡임 1싸이클에 대하여 ON  듀티 시간(msec)을 구한다.   
-#define		COUNT_MIN	20      	// 1분당  LED ON 횟수 
-#define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%) 
+// LED 깜빡임 1싸이클에 대하여 ON  듀티 시간(msec)을 구한다.
+#define		COUNT_MIN	20      	// 1분당  LED ON 횟수
+#define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%)
 
-    Led_CycleMsec  = (60000 / COUNT_MIN);
-    Led_OnDutyMsec = ((Led_CycleMsec * LED_ON_DUTY_RATIO) / 100);
+    LedCycle_Msec  = (60000 / COUNT_MIN);
+    LedOnDuty_Msec = ((LedCycle_Msec * LED_ON_DUTY_RATIO) / 100);
 
 
     while (1)
     {
         CLRWDT();
-		
+
 //		ReSettingDayNigntChk();
 //		ModeChk();
 
-        PPS1Chk();
+        GpsPPS1Chk(); // GPS Puls 체크 
         ADConversionChk();
         MyApplication();
 
-
-        if (Com2RxStatus == RX_GOOD) // GPS RX 통신 GOOD !
+        if (Com2RxStatus == RX_GOOD) // GPS RX2 통신 GOOD !
         {
             Com2RxStatus = STX_CHK;
-            if (Com2RxBuffer[18] == 'A')	// GPS 수신 GOOD !
-            {
-                _LED_GpsGoodState = !_LED_GpsGoodState;	// GPS 수신 GOOD 상태 LED
-
-                i = (Com1TxBuffer[7] - 0x30) * 10;
-                i = (Com1TxBuffer[8] - 0x30) + i;
-                rx_hour = i;
-
-                i = (Com1TxBuffer[9]  - 0x30) * 10;
-                i = (Com1TxBuffer[10] - 0x30) + i;
-                rx_min = i;
-
-                i = (Com1TxBuffer[11] - 0x30) * 10;
-                i = (Com1TxBuffer[12] - 0x30) + i;
-                rx_sec = i;
-            }
-
-
-            for (i = 0;i < Com2RxCurCnt;i++)	Com1TxBuffer[i] = Com2RxBuffer[i];
-
-            i = (Gm1 % 100);
-            Com1TxBuffer[14] = (unsigned char)((Gm1 / 100) + 0x30);
-            Com1TxBuffer[15] = (unsigned char)((i / 10) + 0x30);
-            Com1TxBuffer[16] = (unsigned char)((i % 10) + 0x30);
-
-            Com2RxBuffer[18] = 0x0;
-
-
-            Com1TxThisPt = 0;
-            Com1TxCnt = Com2RxCurCnt;
-            Com1TxStart();
+            GpsRx2DataProc();
         }
 
-
+        // Tx 에러일 경우 대비, Tx리셋 및 Disable
         if (Com1RxStatus == TX_SET)
         {
             if (Com1SerialTime > 3)
             {
                 Com1SerialTime = 0;
                 Com1RxStatus = STX_CHK;
-                Com1TxThisPt = 0;
-                Com1TxCnt = 0;
-                TXIE = 0;
-                TX_EN = 0;
+                Com1TxCurCnt = 0;
+                Com1TxTotalCnt = 0;
+                TX1IE = 0;
             }
         }
     }
@@ -772,63 +841,7 @@ void interrupt isr(void)
         TMR0L = MSEC_L;
         TMR0H = MSEC_H;
 
-
-/////////////////////////////////////////////
-        if (bPPS_Edge && bPPS_On)
-        {
-            bPPS_Edge = FALSE;			
-            if (rx_sec == 59)
-            {
-                Gm1 = 999;
-                Gsec = rx_sec;
-                Gmin = rx_min;
-                Ghour = rx_hour;
-                rx_sec = 0;
-            }
-        }
-
-        Gm1++;
-
-        if (Gm1 >= 1000)
-        {
-            Gm1 = 0;
-            Gsec++;
-            if (Gsec >= 60)
-            {
-                Gsec = 0;
-                Gmin++;
-                if (Gmin >= 60)
-                {
-                    Gmin = 0;
-                    Ghour++;
-                    if (Ghour >= 24)
-                    {
-                        Ghour = 0;
-                    }
-                }
-            }
-        }
-
-
-        if (Gm1 == 0)
-        {
-            ZeroTimer = (unsigned long)((unsigned long)Ghour * (unsigned long)3600000);
-            ZeroTimer = ZeroTimer + (unsigned long)((unsigned long)Gmin  * (unsigned long)60000);
-            ZeroTimer = ZeroTimer + (unsigned long)((unsigned long)Gsec  * (unsigned long)1000);
-        }
-
-        Gmsec60000 = (unsigned int)((ZeroTimer + (unsigned long)Gm1) % (unsigned long)Led_CycleMsec);
-
-        if (Gmsec60000 >= Led_OnDutyMsec)
-        {
-            bAplLamp_On = FALSE;  // Led off
-        }
-        else
-        {
-            bAplLamp_On = TRUE; // Led on
-        }
-
-///////////////////////////
+        bAplLamp_On = IsAplLamp_On();
 
         Com1SerialTime++;
         Com2SerialTime++;
@@ -847,11 +860,11 @@ void interrupt isr(void)
         }
     }
 
-
+    // GPS Rx2 통신 인터럽트
     if ((RC2IE) && (RC2IF))
     {
         RC2IF = 0;
-        Com2_Rx(); 
+        Com2_Rx();
     }
 
     if ((TX2IE) && (TX2IF))
