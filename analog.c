@@ -82,7 +82,7 @@ void ADRead(void)
     AdValue[AdChSel] = (unsigned int)(LongBuf);
     switch (AdChSel)
     {
-    case    0:  	// AN0
+    case    0: // AN0
         An0_Update = 1;
         AdChSel = 1;
         if (AdChSel < AD_MAX_CHANEL)
@@ -92,7 +92,7 @@ void ADRead(void)
             CHS0 = 1;
         }
         break;
-    case    1:		// AN1
+    case    1: // AN1
         An1_Update = 1;
         AdChSel = 2;
         if (AdChSel < AD_MAX_CHANEL)
@@ -102,7 +102,7 @@ void ADRead(void)
             CHS0 = 0;
         }
         break;
-    case    2:		// AN2
+    case    2: // AN2
         An2_Update = 1;
         AdChSel = 3;
         if (AdChSel < AD_MAX_CHANEL)
@@ -112,7 +112,7 @@ void ADRead(void)
             CHS0 = 1;
         }
         break;
-    case    3:		// AN3
+    case    3: // AN3
         An3_Update = 1;
         CHS2 = 0;
         CHS1 = 0;

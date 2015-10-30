@@ -668,7 +668,7 @@ void ApaLampOnOff(void)
 bit IsAplLamp_On(void)
 {
     static bit bAplLamp_On;
-
+	
     if (bPPS_Edge && bPPS_On)
     {
         bPPS_Edge = FALSE;
@@ -680,7 +680,7 @@ bit IsAplLamp_On(void)
             Ghour = rx_hour;
             rx_sec = 0;
         }
-    }
+    }	
 
     Gm1++;
     // msec 가 1000(1초)이면 시간 값(초,분,시)을 1씩 증가 시킨다.
@@ -704,7 +704,6 @@ bit IsAplLamp_On(void)
         }
     }
 
-
     if (Gm1 == 0)
     {
         ZeroTimer = (unsigned long)((unsigned long)Ghour * (unsigned long)3600000);
@@ -712,9 +711,9 @@ bit IsAplLamp_On(void)
         ZeroTimer = ZeroTimer + (unsigned long)((unsigned long)Gsec  * (unsigned long)1000);
     }
 
-    Gmsec60000 = (unsigned int)((ZeroTimer + (unsigned long)Gm1) % (unsigned long)LedCycle_Msec);
+    Gmsec60000 = (unsigned int)((ZeroTimer + (unsigned long)Gm1) % (unsigned long)LED_CYCLE_MSEC);
 
-    if (Gmsec60000 < LedOnDuty_Msec)
+    if (Gmsec60000 < LED_ON_DUTY_MSEC)
     {
         bAplLamp_On = TRUE; // APL LAMP ON
     }
@@ -800,13 +799,6 @@ void main(void)
     Com1RxStatus = STX_CHK;
     dutycycle = 0x1ff;
     Update_Pwm();
-
-// LED 깜빡임 1싸이클에 대하여 ON  듀티 시간(msec)을 구한다.
-#define		COUNT_MIN	20      	// 1분당  LED ON 횟수
-#define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%)
-
-    LedCycle_Msec  = (60000 / COUNT_MIN);
-    LedOnDuty_Msec = ((LedCycle_Msec * LED_ON_DUTY_RATIO) / 100);
 
 
     while (1)

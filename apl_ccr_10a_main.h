@@ -41,11 +41,11 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NoUse_EX2_ON 			RD1	
 #define NoUse_GPS_ON 			RD2	
 #define LED_RUN0 				RD3
-#define _LED_GpsGoodState		LED_RUN0 
+#define _LED_AplLampState		LED_RUN0 // APL Lamp On 듀티 LED
 #define PWM 					RD4
 #define	_PWM					PWM	
 #define LED_RUN1 				RD5
-#define	_LED_AplLampState		LED_RUN1 
+#define	_LED_GpsGoodState		LED_RUN1 // GPS RX2 수신시, 'A' 데이타 수신 상태 LED	 
 #define NoUse_TX2 				RD6	// 통신 TX2 
 #define TX_DP 					RD7	// 통신 RX2
 #define	_RX_CDS					TX_DP
@@ -136,6 +136,14 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
 #define     MSEC_H    0xfc
 #define     MSEC_L    0x18
+
+// LED 깜빡임 1싸이클에 대하여 ON  듀티 시간(msec)을 구한다.
+#define		COUNT_MIN	60      	// 1분당  LED ON 횟수
+#define		LED_ON_DUTY_RATIO	80	// LED ON 듀티 비(%)
+#define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
+#define		LED_ON_DUTY_MSEC	(((LED_CYCLE_MSEC) * (LED_ON_DUTY_RATIO)) / 100)
+
+
 
 extern void    PortInit(void);
 extern void    UserBaudRate(void);
