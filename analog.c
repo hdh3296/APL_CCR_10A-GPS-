@@ -1,39 +1,7 @@
 
 
 #include    <pic18.h>
-
-
-#define	AD_SUMCNT		10
-#define	nAD_MAX_CHANEL	7
-
-#ifndef	TRUE
-#define	TRUE	1
-#endif
-#ifndef FALSE
-#define	FALSE	0
-#endif
-
-
-bit	bAn0_Update = 0;
-bit	bAn1_Update = 0;
-bit	bAn2_Update = 0;
-bit	bAn3_Update = 0;
-bit	bAn4_Update = 0;
-bit	bAn5_Update = 0;
-bit	bAn6_Update = 0;
-bit	bAn7_Update = 0;
-
-bit	bAdConversion = 0;
-
-unsigned	long    SumAD	= 0;
-unsigned 	long    InPutAD = 0;
-unsigned 	int	    ADBuf 	= 0;
-unsigned	int	    SumCnt	= 0;
-unsigned    int   	AdChSel	= 0;
-
-
-unsigned    int     AdValue[nAD_MAX_CHANEL]; // 채널별 Ad 값 저장 버퍼 
-
+#include	"Analog.h"
 
 
 void	AnalogInit(void)
@@ -64,7 +32,7 @@ void	AnalogInit(void)
     bAn6_Update = 0;
     bAn7_Update = 0;
 
-	AdChSel = 3; // 채널 초기값 : 3 채널  
+	AdChSel = 1; // 채널 초기값 : 3 채널  
 }
 
 
@@ -84,6 +52,20 @@ void ADRead(void)
     AdValue[AdChSel] = (unsigned int)(LongBuf);
     switch (AdChSel)
     {
+    case    1: // AN3 : V_IN
+        bAn1_Update = TRUE;
+        CHS2 = 0;
+        CHS1 = 1;
+        CHS0 = 0;
+        AdChSel = 2;
+        break;		
+    case    2: // AN3 : A_IN , 실제 비교 전류 값 
+        bAn2_Update = TRUE;
+        CHS2 = 0;
+        CHS1 = 1;
+        CHS0 = 1;
+        AdChSel = 3;
+        break;		
     case    3: // AN3 : VR(볼륨)1 값 읽기 용(High) 
         bAn3_Update = TRUE;
         CHS2 = 1;
@@ -94,15 +76,15 @@ void ADRead(void)
     case    4: // AN4 : VR(볼륨)2 값 읽기 용(Low) 
         bAn4_Update = TRUE;
         CHS2 = 0;
-        CHS1 = 1;
+        CHS1 = 0;
         CHS0 = 1;
-        AdChSel = 3;
+        AdChSel = 1;
         break;
     default:
         CHS2 = 0;
-        CHS1 = 1;
+        CHS1 = 0;
         CHS0 = 1;
-        AdChSel = 3;
+        AdChSel = 1;
         break;
     }
 }

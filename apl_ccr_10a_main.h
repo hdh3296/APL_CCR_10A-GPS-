@@ -143,6 +143,22 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
 #define		LED_ON_DUTY_MSEC	(((LED_CYCLE_MSEC) * (LED_ON_DUTY_RATIO)) / 100)
 
+#define SETSW_PUSH		0 // 스위치 눌렀을 때가 0 값이다.
+
+#define	chV_IN	1
+#define	chA_IN	2
+#define	chVR1	3
+#define	chVR2	4
+
+
+
+
+
+bit bSetSwPushOK;
+bit bSetSw_UpEdge;
+
+unsigned    char    SetSwCharterTimer = 0;
+
 
 
 extern void    PortInit(void);
@@ -155,6 +171,8 @@ extern void ApaLampOnOff(void);
 extern bit IsAplLamp_On(void);
 extern void GpsRx2DataProc(void);
 extern bit IsNight(void);
+extern bit IsSetSw_UpEdge(void);
+
 
 
 

@@ -509,13 +509,13 @@ void ApaLampOnOff(void)
  			bAn3_Update=0;
 
 			if(AdValue[2] < AdValue[3]){
-				if(dutycycle < 0x3ff)	dutycycle++;
-				else					dutycycle=0x3ff;
+				if(DutyCycle < 0x3ff)	DutyCycle++;
+				else					DutyCycle=0x3ff;
 				Update_Pwm();
 			}
 			else if(AdValue[2] > AdValue[3]){
-				if(dutycycle > 0x0)	dutycycle--;
-				else				dutycycle=0;
+				if(DutyCycle > 0x0)	DutyCycle--;
+				else				DutyCycle=0;
 
 				Update_Pwm();
 			}
@@ -584,7 +584,7 @@ void ApaLampOnOff(void)
 	else{
 		if(bPwmOn){
 			PwmOff();
-			dutycycle=0x3ff;
+			DutyCycle=0x3ff;
 			Update_Pwm();
 		}
 		bPwmOn=0;
@@ -624,19 +624,19 @@ void ApaLampOnOff(void)
 
         if (bAn2_Update && bAn3_Update)
         {
-            bAn2_Update = 0;
-            bAn3_Update = 0;
+            bAn2_Update = FALSE;
+            bAn3_Update = FALSE;
 			// Ad2 와 Ad3 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다. 
             if (AdValue[2] < AdValue[3])
             {
-                if (dutycycle < 0x3ff)	dutycycle++;
-                else					dutycycle = 0x3ff;
+                if (DutyCycle < 0x3ff)	DutyCycle++;
+                else					DutyCycle = 0x3ff;
                 Update_Pwm();
             }
             else if (AdValue[2] > AdValue[3])
             {
-                if (dutycycle > 0x0)	dutycycle--;
-                else				dutycycle = 0;
+                if (DutyCycle > 0x0)	DutyCycle--;
+                else				DutyCycle = 0;
 
                 Update_Pwm();
             }
@@ -652,7 +652,7 @@ void ApaLampOnOff(void)
         if (bPwmOn)
         {
             PwmOff();
-            dutycycle = 0x3ff;
+            DutyCycle = 0x3ff;
             Update_Pwm();
         }
         bPwmOn = FALSE;
@@ -772,8 +772,47 @@ bit IsNight(void)
 	return bNight;
 }
 
+
+bit IsSetSw_UpEdge(void)
+{	
+	if(_SW1_SET_HI == SETSW_PUSH){ // 스위치를 눌렀을 때 !!!
+		if(SetSwCharterTimer > 100){
+			bSetSwPushOK = TRUE;
+		}
+	}else{ // 스위치를 뗐을 때 !
+		SetSwCharterTimer = 0;
+		if(bSetSwPushOK){
+			bSetSw_UpEdge = TRUE;
+		}
+		bSetSwPushOK = FALSE;
+	}
+
+	return bSetSw_UpEdge;
+}
+
+#define fSIZE	4
+volatile const unsigned char Saved1Buf[fSIZE] = {0,}; /*this is the variable in FLASH where the old text resides*/
+unsigned char mynew_value[fSIZE]={0,}; /*unlike the old_text this is not a CONST -> stored in data RAM */
+far unsigned char * mydest_ptr = (far unsigned char *)Saved1Buf;
+
+void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf)
+{	
+	unsigned char SrcBuf[4];
+	unsigned char i;
+
+	SrcBuf[0] = (far unsigned char)DutyCycle;
+	SrcBuf[1] = (far unsigned char)(DutyCycle >> 8);
+	SrcBuf[2] = (far unsigned char)SetAVoltage;
+	SrcBuf[3] = (far unsigned char)(SetAVoltage >> 8);
+	
+	flash_write((const unsigned char *)SrcBuf, fSIZE, (far unsigned char *)DestBuf);
+}
+
+
 void main(void)
 {
+	unsigned char i;
+	
     di();
     Initial();
     PortInit();
@@ -797,13 +836,27 @@ void main(void)
     msec100 = 0;
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
-    dutycycle = 0x1ff;
+    DutyCycle = 0x1ff;
     Update_Pwm();
 
+	bSetSw_UpEdge = FALSE;
+	bSetSwPushOK = FALSE;
 
     while (1)
     {
         CLRWDT();
+
+		if (IsSetSw_UpEdge())
+		{
+			bSetSw_UpEdge = FALSE;
+			WriteVal(DutyCycle, AdValue[chVR1], Saved1Buf);
+		}
+		
+		for(i=0; i<fSIZE; i++)
+		{
+			mynew_value[i] = Saved1Buf[i];
+		}
+			
 
 //		ReSettingDayNigntChk();
 		bNight = IsNight();
@@ -848,6 +901,9 @@ void interrupt isr(void)
 
         Com1SerialTime++;
         Com2SerialTime++;
+		
+		if(SetSwCharterTimer < 250)	
+			SetSwCharterTimer++;
 
         msec100++;
         if (msec100 > 100)

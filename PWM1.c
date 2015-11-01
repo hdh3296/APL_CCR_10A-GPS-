@@ -3,7 +3,7 @@
 #include <pic18.h>
 
 
-unsigned int	dutycycle;
+unsigned int	DutyCycle;
 
 
 
@@ -26,9 +26,9 @@ void PwmOff(void)
 
 void Update_Pwm(void)
 {
-	DC1B0=(bit)dutycycle;		//update the PWM duty cycle 
-	DC1B1=(bit)(dutycycle>>1);
-	CCPR1L=(dutycycle>>2);	
+	DC1B0=(bit)DutyCycle;		//update the PWM duty cycle 
+	DC1B1=(bit)(DutyCycle>>1);
+	CCPR1L=(DutyCycle>>2);	
 }
 
 
@@ -39,7 +39,7 @@ void Pwm1_Init(void)
 	TMR2IF=0;
 	CCP1CON=0x0;	/* select PWM mode */	
 
-	dutycycle = 0x3ff;
+	DutyCycle = 0x3ff;
 	Update_Pwm();
 
 	PR2=0xff;			

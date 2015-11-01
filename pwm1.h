@@ -1,5 +1,5 @@
 
-extern	unsigned int	dutycycle;
+extern	unsigned int	DutyCycle;
 
 
 
