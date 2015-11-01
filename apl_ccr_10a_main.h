@@ -17,9 +17,9 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NIGHT_IN 				RB0x
 #define _CDS_NIGHT_IN			NIGHT_IN
 #define SAVE_HI 				RB1x
-#define _SW1_SET_HI				SAVE_HI
+#define _SW_SET_HI				SAVE_HI
 #define SAVE_LO 				RB2
-#define _SW2_SET_LO				SAVE_LO 	
+#define _SW_SET_LO				SAVE_LO 	
 #define NoUse_MODE3 			RB3	
 #define NoUse_MODE4 			RB4	
 #define NoUse_MODE5 			RB5
@@ -96,42 +96,6 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
 
 
-/*
-#define RXLED       	LATC4 	//0
-#define TXLED       	LATD3	//0
-#define TX_EN       	LATD2	//0
-*/
-
-/*
-#define LED_RUN0_TRIS 	TRISD3	//0
-#define LED_RUN1_TRIS 	TRISD5	//0
-#define LED_RUN2_TRIS 	TRISD6	//0
-
-
-#define NIGHT_IN_TRIS 		TRISB0	//0
-#define SAVE_HI_TRIS 		TRISB1	//0
-#define SAVE_LO_TRIS 		TRISB2	//0
-#define NoUse_MODE3_TRIS 		TRISB3	//0
-#define NoUse_MODE4_TRIS 		TRISB4	//0
-#define NoUse_MODE5_TRIS 		TRISB5	//0
-#define NoUse_MODE6_TRIS 		TRISC0	//0
-#define NoUse_MODE7_TRIS 		TRISC1	//0
-*/
-
-
-/*
-#define	CPU45K80		1
-#define	U_COMPILER		1
-*/
-
-
-
-
-/*
-#define	MAX_ELEV            4
-#define	HOST_DATA_RECOD     42
-#define	MAX_SAVE_BUF_CAN    HOST_DATA_RECOD * MAX_ELEV
-*/
 
 
 #define     MSEC_H    0xfc
@@ -150,14 +114,31 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define	chVR1	3
 #define	chVR2	4
 
+unsigned int BeginTimer = 0;
 
 
 
 
-bit bSetSwPushOK;
-bit bSetSw_UpEdge;
+bit bSetSwPushOK1;
+bit bSetSw_UpEdge1;
+bit bSetSwPushOK2;
+bit bSetSw_UpEdge2;
 
-unsigned    char    SetSwCharterTimer = 0;
+
+unsigned    char    SetSwCharterTimer1 = 0;
+unsigned    char    SetSwCharterTimer2 = 0;
+
+
+
+typedef enum{DAY=0, EVENING=1, NIGHT=2, NONE=3} tag_CurDay;
+tag_CurDay	CurDayNight;
+
+// 5000¿Ã∏È 5V¿Ã¥Ÿ.
+unsigned int SetAVoltage=0; 
+unsigned int SetA1_Volt=0; // SER A1 Voltage, AN0 , ≥∑ 
+unsigned int SetA3_Volt=0; // SER A3 Voltage, AN2 , π„ 
+unsigned int A_IN_Volt=0; // A_IN Voltage, AN3
+unsigned int V_IN_Volt=0; // V_IN Voltage, AN4
 
 
 
@@ -170,10 +151,12 @@ extern unsigned int ReSettingDayNigntChk(void);
 extern void ApaLampOnOff(void);
 extern bit IsAplLamp_On(void);
 extern void GpsRx2DataProc(void);
-extern bit IsNight(void);
-extern bit IsSetSw_UpEdge(void);
-
-
+extern void ChkSetSw_UpEdge(void);
+extern unsigned char GetDayEveningNight(void);
+extern void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf);
+extern void ReadVal(unsigned int* pSavedDutyCycle, unsigned int* pSavedSetA_Volt, 
+			 far unsigned char* SavedBuf, unsigned int* pSetA_Volt);
+extern void GetAdValue(void);
 
 
 

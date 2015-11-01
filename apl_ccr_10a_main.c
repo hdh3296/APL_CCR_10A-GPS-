@@ -86,7 +86,6 @@ bit		bNightDay = 0;
 
 bit		bAplLamp_OnEnab = 0;
 
-bit		bNight;
 
 
 void    PortInit(void)
@@ -511,13 +510,13 @@ void ApaLampOnOff(void)
 			if(AdValue[2] < AdValue[3]){
 				if(DutyCycle < 0x3ff)	DutyCycle++;
 				else					DutyCycle=0x3ff;
-				Update_Pwm();
+				UpdatePwmDuty();
 			}
 			else if(AdValue[2] > AdValue[3]){
 				if(DutyCycle > 0x0)	DutyCycle--;
 				else				DutyCycle=0;
 
-				Update_Pwm();
+				UpdatePwmDuty();
 			}
 		}
 
@@ -585,7 +584,7 @@ void ApaLampOnOff(void)
 		if(bPwmOn){
 			PwmOff();
 			DutyCycle=0x3ff;
-			Update_Pwm();
+			UpdatePwmDuty();
 		}
 		bPwmOn=0;
 
@@ -631,14 +630,14 @@ void ApaLampOnOff(void)
             {
                 if (DutyCycle < 0x3ff)	DutyCycle++;
                 else					DutyCycle = 0x3ff;
-                Update_Pwm();
+                UpdatePwmDuty(DutyCycle);
             }
             else if (AdValue[2] > AdValue[3])
             {
                 if (DutyCycle > 0x0)	DutyCycle--;
                 else				DutyCycle = 0;
 
-                Update_Pwm();
+                UpdatePwmDuty(DutyCycle);
             }
         }
 
@@ -653,7 +652,7 @@ void ApaLampOnOff(void)
         {
             PwmOff();
             DutyCycle = 0x3ff;
-            Update_Pwm();
+            UpdatePwmDuty(DutyCycle);
         }
         bPwmOn = FALSE;
         _PWM = 0;
@@ -764,41 +763,63 @@ void GpsRx2DataProc(void)
 }
 
 
-bit IsNight(void)
+unsigned char GetDayEveningNight(void)
 {
-	static bit bNight;
-	
-	
-	return bNight;
+	unsigned char ret;
+
+	if(_CDS_NIGHT_IN) 
+		ret = DAY; 
+	else	
+		ret = NIGHT;
+
+	return ret;
+		
 }
 
 
-bit IsSetSw_UpEdge(void)
+
+void ChkSetSw_UpEdge(void)
 {	
-	if(_SW1_SET_HI == SETSW_PUSH){ // 스위치를 눌렀을 때 !!!
-		if(SetSwCharterTimer > 100){
-			bSetSwPushOK = TRUE;
+	if(_SW_SET_HI == SETSW_PUSH){ // 스위치를 눌렀을 때 !!!
+		if(SetSwCharterTimer1 > 100){
+			bSetSwPushOK1 = TRUE;
 		}
 	}else{ // 스위치를 뗐을 때 !
-		SetSwCharterTimer = 0;
-		if(bSetSwPushOK){
-			bSetSw_UpEdge = TRUE;
+		SetSwCharterTimer1 = 0;
+		if(bSetSwPushOK1){
+			bSetSw_UpEdge1 = TRUE;
 		}
-		bSetSwPushOK = FALSE;
+		bSetSwPushOK1 = FALSE;
 	}
 
-	return bSetSw_UpEdge;
+	if(_SW_SET_LO == SETSW_PUSH){ // 스위치를 눌렀을 때 !!!
+		if(SetSwCharterTimer2 > 100){
+			bSetSwPushOK2 = TRUE;
+		}
+	}else{ // 스위치를 뗐을 때 !
+		SetSwCharterTimer2 = 0;
+		if(bSetSwPushOK2){
+			bSetSw_UpEdge2 = TRUE;
+		}
+		bSetSwPushOK2 = FALSE;
+	}	
 }
 
 #define fSIZE	4
 volatile const unsigned char Saved1Buf[fSIZE] = {0,}; /*this is the variable in FLASH where the old text resides*/
+volatile const unsigned char Saved3Buf[fSIZE] = {0,};
+
 unsigned char mynew_value[fSIZE]={0,}; /*unlike the old_text this is not a CONST -> stored in data RAM */
 far unsigned char * mydest_ptr = (far unsigned char *)Saved1Buf;
+
+unsigned int  SavedDutyCycle1 = 0;
+unsigned int  SavedSetA1_Volt = 0;
+unsigned int  SavedDutyCycle3 = 0;
+unsigned int  SavedSetA3_Volt = 0;
 
 void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf)
 {	
 	unsigned char SrcBuf[4];
-	unsigned char i;
 
 	SrcBuf[0] = (far unsigned char)DutyCycle;
 	SrcBuf[1] = (far unsigned char)(DutyCycle >> 8);
@@ -809,6 +830,33 @@ void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const u
 }
 
 
+void ReadVal(unsigned int* pSavedDutyCycle, unsigned int* pSavedSetA_Volt, 
+			 far unsigned char* SavedBuf, unsigned int* pSetA_Volt)
+{
+	unsigned int temp;
+
+	temp = 0x0000;
+	temp = SavedBuf[1];
+	temp = temp << 8;
+	*pSavedDutyCycle = temp | ((unsigned int)SavedBuf[0] & 0x00ff);
+	DutyCycle = *pSavedDutyCycle;	
+
+	temp = 0x0000;
+	temp = SavedBuf[3];
+	temp = temp << 8;
+	*pSavedSetA_Volt = temp | ((unsigned int)SavedBuf[2] & 0x00ff);
+	*pSetA_Volt = *pSavedSetA_Volt; // 주간 셋팅 값 
+}
+
+
+void GetAdValue(void)
+{	
+	V_IN_Volt = AdValue[1];
+	A_IN_Volt = AdValue[2];
+	SetA1_Volt = AdValue[3];
+	SetA3_Volt = AdValue[4];				
+}
+
 void main(void)
 {
 	unsigned char i;
@@ -817,7 +865,7 @@ void main(void)
     Initial();
     PortInit();
     Timer0Init();
-//	UserBaudRate();
+	//UserBaudRate();
     Com1_Init();
     Com2_Init();
     Pwm1_Init();
@@ -827,42 +875,59 @@ void main(void)
 
     ei();
 
-    LoadSetupValue();
+    //LoadSetupValue();
 
     modesw = 0xff;
     LedBlinkModeInit();
 
+
+	do{
+//		CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
+		CurDayNight = NIGHT;
+		if(CurDayNight == DAY) 
+			ReadVal(&SavedDutyCycle1, &SavedSetA1_Volt, Saved1Buf, &SetA1_Volt); 
+		else if(CurDayNight == NIGHT) 
+			ReadVal(&SavedDutyCycle3, &SavedSetA3_Volt, Saved3Buf, &SetA3_Volt);
+		else 
+			DutyCycle = 0x0;
+		
+		_aplLAMP_ON = ON_lamp;
+		UpdatePwmDuty(DutyCycle);
+		CLRWDT();
+	}while(BeginTimer < 100);
+	
     MainTimer = 0;
     msec100 = 0;
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
-    DutyCycle = 0x1ff;
-    Update_Pwm();
 
-	bSetSw_UpEdge = FALSE;
-	bSetSwPushOK = FALSE;
+	bSetSw_UpEdge1 = FALSE;
+	bSetSwPushOK1 = FALSE;
 
     while (1)
     {
         CLRWDT();
 
-		if (IsSetSw_UpEdge())
-		{
-			bSetSw_UpEdge = FALSE;
-			WriteVal(DutyCycle, AdValue[chVR1], Saved1Buf);
-		}
-		
-		for(i=0; i<fSIZE; i++)
-		{
-			mynew_value[i] = Saved1Buf[i];
-		}
-			
+		ChkSetSw_UpEdge();
 
-//		ReSettingDayNigntChk();
-		bNight = IsNight();
+		if (bSetSw_UpEdge1)
+		{
+			WriteVal(DutyCycle, SetA1_Volt, Saved1Buf);
+			bSetSw_UpEdge1 = FALSE;
+		}
+
+		if (bSetSw_UpEdge2)
+		{
+			WriteVal(DutyCycle, SetA3_Volt, Saved3Buf);
+			bSetSw_UpEdge2 = FALSE;
+		}		
+
+		//ReSettingDayNigntChk();
+		
 
         GpsPPS1Chk(); // GPS Puls 체크 
         ADConversionChk();
+		GetAdValue();
         ApaLampOnOff();
 
         if (Com2RxStatus == RX_GOOD) // GPS RX2 통신 GOOD !
@@ -902,8 +967,13 @@ void interrupt isr(void)
         Com1SerialTime++;
         Com2SerialTime++;
 		
-		if(SetSwCharterTimer < 250)	
-			SetSwCharterTimer++;
+		if(SetSwCharterTimer1 < 250)	
+			SetSwCharterTimer1++;
+		if(SetSwCharterTimer2 < 250)	
+			SetSwCharterTimer2++;
+		
+		if(BeginTimer < 1000)
+			BeginTimer++;
 
         msec100++;
         if (msec100 > 100)
