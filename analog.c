@@ -23,16 +23,16 @@ void	AnalogInit(void)
 
     DONE = 1;
 
-    bAn0_Update = 0;
-    bAn1_Update = 0;
-    bAn2_Update = 0;
-    bAn3_Update = 0;
-    bAn4_Update = 0;
-    bAn5_Update = 0;
-    bAn6_Update = 0;
-    bAn7_Update = 0;
+    bAn0_Updated = 0;
+    bAn1_Updated = 0;
+    bAn2_Updated = 0;
+    bAn3_Updated = 0;
+    bAn4_Updated = 0;
+    bAn5_Updated = 0;
+    bAn6_Updated = 0;
+    bAn7_Updated = 0;
 
-	AdChSel = 1; // 채널 초기값 : 3 채널  
+	AdChSel = 1; // 채널 초기값
 }
 
 
@@ -53,28 +53,28 @@ void ADRead(void)
     switch (AdChSel)
     {
     case    1: // AN3 : V_IN
-        bAn1_Update = TRUE;
+        bAn1_Updated = TRUE;
         CHS2 = 0;
         CHS1 = 1;
         CHS0 = 0;
         AdChSel = 2;
         break;		
     case    2: // AN3 : A_IN , 실제 비교 전류 값 
-        bAn2_Update = TRUE;
+        bAn2_Updated = TRUE;
         CHS2 = 0;
         CHS1 = 1;
         CHS0 = 1;
         AdChSel = 3;
         break;		
     case    3: // AN3 : VR(볼륨)1 값 읽기 용(High) 
-        bAn3_Update = TRUE;
+        bAn3_Updated = TRUE;
         CHS2 = 1;
         CHS1 = 0;
         CHS0 = 0;
         AdChSel = 4;
         break;
     case    4: // AN4 : VR(볼륨)2 값 읽기 용(Low) 
-        bAn4_Update = TRUE;
+        bAn4_Updated = TRUE;
         CHS2 = 0;
         CHS1 = 0;
         CHS0 = 1;

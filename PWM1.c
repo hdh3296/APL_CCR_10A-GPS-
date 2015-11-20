@@ -4,7 +4,7 @@
 #include "Pwm1.h"
 
 
-
+// PWM Mode On
 void PwmOn(void)
 {
 	CCP1M0=1;
@@ -38,7 +38,7 @@ void Pwm1_Init(void)
 	TMR2IF=0;
 	CCP1CON=0x0;	/* select PWM mode */	
 
-	DutyCycle = 0x3ff; // Q???
+	DutyCycle = DUTI_MAX; // Q???
 	UpdatePwmDuty(DutyCycle); // Q???
 
 	PR2=0xff;			

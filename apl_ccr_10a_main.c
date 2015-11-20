@@ -489,8 +489,8 @@ void ActiveOnChk(void)
 		_LED_GpsGoodState=1;
 	}
 
-	if(bAn0_Update){
-		bAn0_Update=0;
+	if(bAn0_Updated){
+		bAn0_Updated=0;
 		if(WakeupTime < 200) WakeupTime++;
 	}
 }
@@ -503,9 +503,9 @@ void ApaLampOnOff(void)
 	if(bActiveOn || !NoUse_MODE5){
 		if(!bPwmOn)	PwmOn();
 
-		if(bAn2_Update && bAn3_Update){
-			bAn2_Update=0;
- 			bAn3_Update=0;
+		if(bAn2_Updated && bAn3_Updated){
+			bAn2_Updated=0;
+ 			bAn3_Updated=0;
 
 			if(AdValue[2] < AdValue[3]){
 				if(DutyCycle < 0x3ff)	DutyCycle++;
@@ -595,7 +595,7 @@ void ApaLampOnOff(void)
 		_LED_AplLampState=1;
 
 		if(WakeupTime > 0){
-			bAn0_Update=0;
+			bAn0_Updated=0;
 			CLRWDT();
 			MainTimer=0;
 			WakeupTime=0;
@@ -610,6 +610,23 @@ void ApaLampOnOff(void)
 
 */
 
+void SetApaLamp(void)
+{
+	if (bAn2_Updated) // A_IN 아날로그 값이 업데이트 됬으면 ?
+	{
+		bAn2_Updated = FALSE;
+	
+		if(bSetSwPushOK1)		SetAVoltage = SetA1_Volt;
+		else if(bSetSwPushOK2)	SetAVoltage = SetA3_Volt;
+		// Ad2 와 Ad3(또는 Ad4) 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다.
+		DutyCycle = GetDutyByCompareCurrent(DutyCycle, SetAVoltage, A_IN_Volt, CurDayNight);
+							
+	}
+    _aplLAMP_ON = ON_lamp; // 실제 APL 램프 ON
+    UpdatePwmDuty(DutyCycle);
+	bPwmOn = TRUE;
+}
+
 
 // APL Lamp 출력 함수이다.
 void ApaLampOnOff(void)
@@ -618,32 +635,39 @@ void ApaLampOnOff(void)
 	// _aplLAMP_ON 및 PWM 출력을 내보내면 LAMP에 실제로 불이 켜진다.  
     if (bAplLamp_OnEnab)	
     {
-        if (!bPwmOn)
-            PwmOn();
+		if (bPwmOn == FALSE)
+        	PwmOn();
+		
+		if (bAgoBlkLedOff)
+		{
+			bAgoBlkLedOff = FALSE;
+			StartTimer = 0;
 
-        if (bAn2_Update && bAn3_Update)
-        {
-            bAn2_Update = FALSE;
-            bAn3_Update = FALSE;
-			// Ad2 와 Ad3 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다. 
-            if (AdValue[2] < AdValue[3])
-            {
-                if (DutyCycle < 0x3ff)	DutyCycle++;
-                else					DutyCycle = 0x3ff;
-                UpdatePwmDuty(DutyCycle);
-            }
-            else if (AdValue[2] > AdValue[3])
-            {
-                if (DutyCycle > 0x0)	DutyCycle--;
-                else				DutyCycle = 0;
+			if(CurDayNight == DAY) 
+				ReadVal(&SavedDutyCycle1, &SavedSetA1_Volt, Saved1Buf, &SetA1_Volt);
+			else 
+				ReadVal(&SavedDutyCycle3, &SavedSetA3_Volt, Saved3Buf, &SetA3_Volt);			
 
-                UpdatePwmDuty(DutyCycle);
-            }
-        }
+		}
+		else
+		{
+			if(StartTimer > 100)
+			{
+				if (bAn2_Updated) // A_IN 아날로그 값이 업데이트 됬으면 ?
+				{
+					bAn2_Updated = FALSE;
 
-        _aplLAMP_ON = ON_lamp;
+					if(CurDayNight == DAY) 	SetAVoltage = SetA1_Volt;
+					else 					SetAVoltage = SetA3_Volt;
+					// Ad2 와 Ad3(또는 Ad4) 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다.
+					DutyCycle = GetDutyByCompareCurrent(DutyCycle, SetAVoltage, A_IN_Volt, CurDayNight);									
+				}
+			}
+		}
+        _aplLAMP_ON = ON_lamp; // 실제 APL 램프 ON
+        UpdatePwmDuty(DutyCycle);
         bPwmOn = TRUE;
-        _LED_AplLampState = ON_runled1;
+        _LED_AplLampState = ON_runled1; // 상태 LED 깜빡 깜빡 !!!
 
     }
     else
@@ -658,6 +682,7 @@ void ApaLampOnOff(void)
         _PWM = 0;
         _aplLAMP_ON = OFF_lamp;
         _LED_AplLampState = OFF_runled1;
+		bAgoBlkLedOff = TRUE;
     }
 }
 
@@ -805,17 +830,7 @@ void ChkSetSw_UpEdge(void)
 	}	
 }
 
-#define fSIZE	4
-volatile const unsigned char Saved1Buf[fSIZE] = {0,}; /*this is the variable in FLASH where the old text resides*/
-volatile const unsigned char Saved3Buf[fSIZE] = {0,};
 
-unsigned char mynew_value[fSIZE]={0,}; /*unlike the old_text this is not a CONST -> stored in data RAM */
-far unsigned char * mydest_ptr = (far unsigned char *)Saved1Buf;
-
-unsigned int  SavedDutyCycle1 = 0;
-unsigned int  SavedSetA1_Volt = 0;
-unsigned int  SavedDutyCycle3 = 0;
-unsigned int  SavedSetA3_Volt = 0;
 
 void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf)
 {	
@@ -831,7 +846,7 @@ void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const u
 
 
 void ReadVal(unsigned int* pSavedDutyCycle, unsigned int* pSavedSetA_Volt, 
-			 far unsigned char* SavedBuf, unsigned int* pSetA_Volt)
+			 volatile const unsigned char* SavedBuf, unsigned int* pSetA_Volt)
 {
 	unsigned int temp;
 
@@ -853,9 +868,67 @@ void GetAdValue(void)
 {	
 	V_IN_Volt = AdValue[1];
 	A_IN_Volt = AdValue[2];
-	SetA1_Volt = AdValue[3];
-	SetA3_Volt = AdValue[4];				
+	if (bSetSwPushOK1)
+	{
+		SetA1_Volt = AdValue[3];
+	}
+	if (bSetSwPushOK2)	
+	{
+		SetA3_Volt = AdValue[4];
+	}
 }
+
+
+#define	A_SET_V_MAX 5000 // mV
+#define	A_SET_V_MIN 0
+#define A_SET_A_MAX1 10000 // mA
+#define A_SET_A_MIN1 0
+#define SET_AMP_PER_VOLT1	((A_SET_A_MAX1 - A_SET_A_MIN1) / (A_SET_V_MAX - A_SET_V_MIN)) // 4
+#define A_SET_A_MAX2 10000 // mA
+#define A_SET_A_MIN2 0
+#define SET_AMP_PER_VOLT2	((A_SET_A_MAX2 - A_SET_A_MIN2) / (A_SET_V_MAX - A_SET_V_MIN)) // 4
+#define A_SET_A_MAX3 10000 // mA
+#define A_SET_A_MIN3 0
+#define SET_AMP_PER_VOLT3	((A_SET_A_MAX3 - A_SET_A_MIN3) / (A_SET_V_MAX - A_SET_V_MIN)) // 4
+unsigned int GetDutyByCompareCurrent(unsigned int duty, unsigned int setVolt, 
+												  unsigned int inVolt, unsigned char CurDayNight)
+{
+	long double setCurrent; // 변환된 볼륨에의한 셋팅 전류 값
+	long double inCurrent;  // 변환된 입력 피드백 전류 값
+	long double OffsetDutyCycle;
+
+	if(CurDayNight == DAY) setCurrent = (long double)setVolt * SET_AMP_PER_VOLT1; // 166 x 4 = 664
+	else				   setCurrent = (long double)setVolt * SET_AMP_PER_VOLT3; // 380 x 2 = 760
+	
+	inCurrent = (((long double)inVolt - 600) / 60 ) * 1000; // (635 - 600)/60 * 1000 = 583
+
+	OffsetDutyCycle = ((setCurrent * 6)/100) + 40; // 
+	
+	if(setCurrent > inCurrent){ // 760 > 583			
+		if( setCurrent > (inCurrent + OffsetDutyCycle) ){ // 760 > (583+82)=645
+			if(duty < DUTI_MAX)	duty++; 
+			else				duty = DUTI_MAX; 
+		}
+	}else if(setCurrent < inCurrent){
+		if( (setCurrent + OffsetDutyCycle) < inCurrent ){
+			if(duty > 0)		duty--;
+		}
+	}		
+
+	if(AnalogValidTime > 20){	
+		if(setVolt <= A_SET_V_MIN)
+			DutyCycle = 0;
+		if(setVolt >= A_SET_V_MAX)
+			DutyCycle = DUTI_MAX;
+	}
+	
+	return duty;
+}												  
+
+
+///////////////////////////
+//   메인 함수 				//
+///////////////////////////
 
 void main(void)
 {
@@ -882,19 +955,19 @@ void main(void)
 
 
 	do{
-//		CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
-		CurDayNight = NIGHT;
+		CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
 		if(CurDayNight == DAY) 
 			ReadVal(&SavedDutyCycle1, &SavedSetA1_Volt, Saved1Buf, &SetA1_Volt); 
-		else if(CurDayNight == NIGHT) 
+		else
 			ReadVal(&SavedDutyCycle3, &SavedSetA3_Volt, Saved3Buf, &SetA3_Volt);
-		else 
-			DutyCycle = 0x0;
-		
-		_aplLAMP_ON = ON_lamp;
+
+		PwmOn();
 		UpdatePwmDuty(DutyCycle);
+		_aplLAMP_ON = ON_lamp;
+		bPwmOn = TRUE;
 		CLRWDT();
 	}while(BeginTimer < 100);
+	
 	
     MainTimer = 0;
     msec100 = 0;
@@ -907,6 +980,11 @@ void main(void)
     while (1)
     {
         CLRWDT();
+		
+		//ReSettingDayNigntChk();
+		GpsPPS1Chk(); // GPS Puls 체크 
+		ADConversionChk();
+		GetAdValue();
 
 		ChkSetSw_UpEdge();
 
@@ -920,15 +998,12 @@ void main(void)
 		{
 			WriteVal(DutyCycle, SetA3_Volt, Saved3Buf);
 			bSetSw_UpEdge2 = FALSE;
-		}		
+		}	 
 
-		//ReSettingDayNigntChk();
-		
-
-        GpsPPS1Chk(); // GPS Puls 체크 
-        ADConversionChk();
-		GetAdValue();
-        ApaLampOnOff();
+		if (bSetSwPushOK1 || bSetSwPushOK2)
+			SetApaLamp();
+		else
+        	ApaLampOnOff();
 
         if (Com2RxStatus == RX_GOOD) // GPS RX2 통신 GOOD !
         {
@@ -974,6 +1049,12 @@ void interrupt isr(void)
 		
 		if(BeginTimer < 1000)
 			BeginTimer++;
+
+		if(StartTimer < 1000) 
+			StartTimer++;
+
+		if(AnalogValidTime < 200)	
+			AnalogValidTime++;
 
         msec100++;
         if (msec100 > 100)

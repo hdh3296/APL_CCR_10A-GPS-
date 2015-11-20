@@ -140,6 +140,21 @@ unsigned int SetA3_Volt=0; // SER A3 Voltage, AN2 , นใ
 unsigned int A_IN_Volt=0; // A_IN Voltage, AN3
 unsigned int V_IN_Volt=0; // V_IN Voltage, AN4
 
+bit bAgoBlkLedOff;
+unsigned int StartTimer = 0;
+unsigned int AnalogValidTime = 0;
+
+
+#define fSIZE	4
+volatile const unsigned char Saved1Buf[fSIZE] = {0,}; /*this is the variable in FLASH where the old text resides*/
+volatile const unsigned char Saved3Buf[fSIZE] = {0,};
+
+unsigned int  SavedDutyCycle1 = 0;
+unsigned int  SavedSetA1_Volt = 0;
+unsigned int  SavedDutyCycle3 = 0;
+unsigned int  SavedSetA3_Volt = 0;
+
+
 
 
 extern void    PortInit(void);
@@ -155,9 +170,11 @@ extern void ChkSetSw_UpEdge(void);
 extern unsigned char GetDayEveningNight(void);
 extern void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf);
 extern void ReadVal(unsigned int* pSavedDutyCycle, unsigned int* pSavedSetA_Volt, 
-			 far unsigned char* SavedBuf, unsigned int* pSetA_Volt);
+			 volatile const unsigned char* SavedBuf, unsigned int* pSetA_Volt);
 extern void GetAdValue(void);
-
+extern unsigned int GetDutyByCompareCurrent(unsigned int duty, unsigned int setVolt, 
+												  unsigned int inVolt, unsigned char CurDayNight);
+extern void SetApaLamp(void);
 
 
 

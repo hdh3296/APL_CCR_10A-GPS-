@@ -14,14 +14,14 @@ extern	unsigned char	ADConversionChk(void);
 #endif
 
 
-bit	bAn0_Update = 0;
-bit	bAn1_Update = 0;
-bit	bAn2_Update = 0;
-bit	bAn3_Update = 0;
-bit	bAn4_Update = 0;
-bit	bAn5_Update = 0;
-bit	bAn6_Update = 0;
-bit	bAn7_Update = 0;
+bit	bAn0_Updated = 0;
+bit	bAn1_Updated = 0;
+bit	bAn2_Updated = 0;
+bit	bAn3_Updated = 0;
+bit	bAn4_Updated = 0;
+bit	bAn5_Updated = 0;
+bit	bAn6_Updated = 0;
+bit	bAn7_Updated = 0;
 
 bit	bAdConversion = 0;
 
