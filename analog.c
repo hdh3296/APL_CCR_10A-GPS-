@@ -147,7 +147,7 @@ void GetMyAD(void)
 			{
 			case 0:
 				break;
-			case 3:
+			case 3: // ≥∑ ¿œ ∂ß 
 				Sum[ch] = Sum[ch] + (unsigned long int)arInPut_mV[ch];
 				Cnt[ch]++;
 
@@ -158,7 +158,7 @@ void GetMyAD(void)
 					Cnt[ch] = 0;
 				}
 				break;				
-			case 4:	
+			case 4: // π„ ¿œ ∂ß 	
 				Sum[ch] = Sum[ch] + (unsigned long int)arInPut_mV[ch];
 				Cnt[ch]++;
 

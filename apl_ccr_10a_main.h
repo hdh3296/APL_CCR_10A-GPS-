@@ -35,7 +35,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NoUse_INVALID 			RC3	
 #define NoUse_RC4	 			RC4	
 #define LED_RUN2	 			RC5	
-#define _LED_RUN2	 			LED_RUN2
+#define _LED_NIG	 			LED_RUN2 // Night 상태 LED 
 #define NoUse_TX1	 			RC6	// CCP3/CK1/TX1/CANTX	
 #define NoUse_RX1	 			RC7	// CANRX/RX1/DT1/CCP4
 
@@ -106,7 +106,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
 // LED 깜빡이는 1싸이클에 대하여 ON 듀티 시간(msec) 값을 구한다.
 #define		COUNT_MIN	60      	// 1분당  LED ON 횟수
-#define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%)
+#define		LED_ON_DUTY_RATIO	100	// LED ON 듀티 비(%)
 #define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
 // Lamp Blink에서의 On 주기 시간(ms) 
 #define		LED_ON_DUTY_MSEC	((ULONG)((ULONG)(((ULONG)LED_CYCLE_MSEC) * ((ULONG)LED_ON_DUTY_RATIO)) / 100))
@@ -119,6 +119,8 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define	chVR2	4
 
 
+#define LED_NIG_ON	0
+#define LED_NIG_OFF	1
 
 
 #ifndef	ON_lamp
@@ -142,6 +144,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
 //#define		NIGHT_VOLT			200
 //#define		NIGHT_DAY_VOLT		135
+
 
 
 

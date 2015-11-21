@@ -79,7 +79,7 @@ void    InitPort(void)
     NoUse_EX2_ON = 0;
     _LED_GpsGoodState = 1;	// 1 : Led Off
     _LED_AplLampState = 1;	// 1 : Led Off
-    _LED_RUN2 = 1;			// 1 : Led Off
+    _LED_NIG = 1;			// 1 : Led Off
     NoUse_TX2 = 1;
     NoUse_TX1 = 1;
 }
@@ -182,7 +182,7 @@ unsigned int ReSettingDayNigntChk(void)
         bNightDay = 0;
         NightSetTime = 0;
         bNight = 0;
-        _LED_RUN2 = 1;
+        _LED_NIG = 1;
         return(0);
     }
 
@@ -196,7 +196,7 @@ unsigned int ReSettingDayNigntChk(void)
             CompanyWrite();
             LoadSetupValue();
         }
-        if (bNight)	_LED_RUN2 = 0;
+        if (bNight)	_LED_NIG = 0;
     }
     else if (!NoUse_MODE6 && NoUse_MODE7)
     {
@@ -207,7 +207,7 @@ unsigned int ReSettingDayNigntChk(void)
             CompanyWrite();
             LoadSetupValue();
         }
-        if (bNightDay)	_LED_RUN2 = 0;
+        if (bNightDay)	_LED_NIG = 0;
     }
     else
     {
@@ -219,7 +219,7 @@ unsigned int ReSettingDayNigntChk(void)
 
         if (SettingReadyTime > 4)
         {
-            _LED_RUN2 = !_LED_RUN2;
+            _LED_NIG = !_LED_NIG;
             SettingReadyTime = 0;
         }
     }
@@ -530,7 +530,7 @@ void ApaLampOnOff(void)
 			MainTimer=0;
 			WakeupTime=0;
 			_LED_GpsGoodState=1;
-			_LED_RUN2=1;
+			_LED_NIG=1;
 
 			SLEEP();
 		}
@@ -921,13 +921,13 @@ ULONG GetSetCurrent(unsigned int set_mV, unsigned char CurDayNight)
 
 
 unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
-                                     unsigned int Out_mV, unsigned char CurDayNight)
+                                     unsigned int in_mV, unsigned char CurDayNight)
 {
     ULONG Offset;
 	ULONG i;
 
-    if(Out_mV >= 600) 
-		In_Current = (((unsigned long int)Out_mV - 600) * 1000) / 60;  // (630 - 600)/60 * 1000 = 500 mA 
+    if(in_mV >= 600) 
+		In_Current = (((ULONG)in_mV - 600) * 1000) / 60;  // (630 - 600)/60 * 1000 = 500 mA 
 	else 
 		In_Current = 0;
 	
@@ -993,19 +993,16 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 		}
 		else
 		{
-			if (StartTimer >= 0)
-			{
-				if (bCurA_IN_mVUpd)
-				{	
-					bCurA_IN_mVUpd = FALSE;
-					if (Set_Current > (JUNG_GIJUN + 2000))
-					{
-						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNight].SetA, CurA_IN_mV, CurDayNight);
-					}
+			if (bCurA_IN_mVUpd)
+			{	
+				bCurA_IN_mVUpd = FALSE;
+				if (Set_Current > JUNG_GIJUN)
+				{
+					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNight].SetA, CurA_IN_mV, CurDayNight);
 				}
-				PwmOut(DutyCycle);
-				_LAMP_ON = TRUE; // LAMP ON	
 			}
+			PwmOut(DutyCycle);
+			_LAMP_ON = TRUE; // LAMP ON	
 		}
 		_LED_AplLampState = ON_runled1; // Run 상태 LED On
 	}
@@ -1019,6 +1016,7 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
 	}
 }
+
 
 
 
@@ -1046,9 +1044,9 @@ void main(void)
     TMR0IE = 1;
     SWDTEN = 1;  // Software Controlled Watchdog Timer Enable bit / 1 = Watchdog Timer is on
 
-//    PwOnAplLamp();
-//    Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);
-//    SetDutyCycle = DutyCycle;
+    PwOnAplLamp();
+    Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);
+    SetDutyCycle = DutyCycle;
 
     //LoadSetupValue();
     modesw = 0xff;
@@ -1059,16 +1057,15 @@ void main(void)
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
 	
-DutyCycle = 300;
-_LAMP_ON = TRUE;
-PwmOut(DutyCycle);	
 
     while (1)
     {
         CLRWDT();
 		
-		
-/*
+mySetA0_Val = stApl[0].SetA;	
+mySetA2_Val = stApl[2].SetA;
+
+
         if (Set_Current > JUNG_GIJUN)
         {
             if (T2CON != 0x04)
@@ -1101,7 +1098,9 @@ PwmOut(DutyCycle);
         }
 		GpsPPS1Chk(); // GPS Puls 체크
         //ReSettingDayNigntChk();
-        CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 가져온다.  
+        CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 가져온다. 
+        if(CurDayNight == NIGHT) _LED_NIG = LED_NIG_ON;
+		else			_LED_NIG = LED_NIG_OFF;
         ChkSetupSw(); // 스위치 엣지 및 bSetSwPushOK 여부 가져온다.
 
         // 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
@@ -1125,7 +1124,7 @@ PwmOut(DutyCycle);
 			// 채널 변경 
 			if(bSetSwPushOK_Day)		AdChSel = ChangeAdChSel(AdChSel, 3);
 			else if(bSetSwPushOK_Night)	AdChSel = ChangeAdChSel(AdChSel, 4);
-			else						AdChSel = ChangeAdChSel(AdChSel, 1);	
+			else						AdChSel = ChangeAdChSel(AdChSel, 2);	
 			Set_AdCh(AdChSel);
 			DONE = 1;
         }
@@ -1141,7 +1140,7 @@ PwmOut(DutyCycle);
 			}
 			else
 			{
-				if(SetStTimer > 1000)
+				if(SetStTimer > 300)
 				{
 					if(bSetSwPushOK_Day)
 					{
@@ -1163,7 +1162,7 @@ PwmOut(DutyCycle);
 			bSetSt = TRUE;
 		}
 
-*/
+
 
     }
 }
@@ -1192,14 +1191,13 @@ void interrupt isr(void)
         if (BeginTimer < 1000)
             BeginTimer++;
 
-        if (StartTimer < 0xffff)
-            StartTimer++;
-
         if (AnalogValidTime < 200)
             AnalogValidTime++;
 
         if (InDayTimer < 0xff)
             InDayTimer++;
+		if (SetStTimer < 0xffff)
+            SetStTimer++;
 
         msec100++;
         if (msec100 > 100)
