@@ -1,6 +1,8 @@
+#include	"Commom.h"
 
-extern	void			AnalogInit(void);
-extern	unsigned char	ADConversionChk(void);
+
+extern	void			InitAD(void);
+extern	bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel);
 
 
 #define	AD_SUMCNT		10
@@ -33,8 +35,15 @@ unsigned    int   	AdChSel	= 0;
 
 unsigned    int     AdValue[nAD_MAX_CHANEL]; // 채널별 Ad 값 저장 버퍼 
 
+// 5000이면 5V이다.
+#define ADCH_MAX	5
+unsigned int arInPut_mV[ADCH_MAX] = {0,}; // 각 채널에서 읽어드린 AD 값 
+UCHAR arIs_AdUpd[ADCH_MAX] = {0,};
 
 
+extern void GetMyAD(void);
+extern UCHAR ChangeAdChSel(UCHAR AdSel, tag_CurDay ch);
+extern void Set_AdCh(UCHAR AdSel);
 
 
 

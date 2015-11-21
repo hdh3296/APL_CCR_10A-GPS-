@@ -1,5 +1,8 @@
 
 
+
+
+
 extern volatile bit RB0x                @ ((unsigned)&PORTB*8)+0;
 extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
@@ -37,7 +40,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NoUse_RX1	 			RC7	// CANRX/RX1/DT1/CCP4
 
 #define LED_ON 					RD0
-#define _aplLAMP_ON				LED_ON // APL Lamp On/Off  		
+#define _LAMP_ON				LED_ON // APL Lamp On/Off  		
 #define NoUse_EX2_ON 			RD1	
 #define NoUse_GPS_ON 			RD2	
 #define LED_RUN0 				RD3
@@ -101,11 +104,12 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define     MSEC_H    0xfc
 #define     MSEC_L    0x18
 
-// LED 깜빡임 1싸이클에 대하여 ON  듀티 시간(msec)을 구한다.
+// LED 깜빡이는 1싸이클에 대하여 ON 듀티 시간(msec) 값을 구한다.
 #define		COUNT_MIN	60      	// 1분당  LED ON 횟수
 #define		LED_ON_DUTY_RATIO	80	// LED ON 듀티 비(%)
 #define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
-#define		LED_ON_DUTY_MSEC	(((LED_CYCLE_MSEC) * (LED_ON_DUTY_RATIO)) / 100)
+// Lamp Blink에서의 On 주기 시간(ms) 
+#define		LED_ON_DUTY_MSEC	((ULONG)((ULONG)(((ULONG)LED_CYCLE_MSEC) * ((ULONG)LED_ON_DUTY_RATIO)) / 100))
 
 #define SETSW_PUSH		0 // 스위치 눌렀을 때가 0 값이다.
 
@@ -114,24 +118,105 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define	chVR1	3
 #define	chVR2	4
 
+
+
+
+#ifndef	ON_lamp
+#define	ON_lamp	1
+#endif
+#ifndef	OFF_lamp
+#define	OFF_lamp	0
+#endif
+
+#ifndef	ON_runled1
+#define	ON_runled1	0
+#endif
+#ifndef	OFF_runled1
+#define	OFF_runled1	1
+#endif
+
+#define JUNG_GIJUN 2000
+
+
+#define		LED_ONOFF_CNT		20
+
+//#define		NIGHT_VOLT			200
+//#define		NIGHT_DAY_VOLT		135
+
+
+
+
+
+
+
+
+unsigned    char  	MainTimer = 0;
+unsigned    char	msec100 = 0;
+
+
+unsigned    char	NightSetTime = 0;
+unsigned    char	NightDaySetTime = 0;
+unsigned    char	SettingReadyTime = 0;
+
+unsigned    char	DayNightTimer = 0;
+
+unsigned    char	Ghour = 0, Gmin = 0, Gsec = 0; // Gps 로 부터 수신된 RxData 값 
+unsigned    int		Gms1 = 0; // 마이컴의 인터럽트에 의한 발생된 msec 값 저장 변수 
+unsigned    int		Gms60000 = 0; // 현재 시간값을 ms단위로 환산한 값 저장 변수 
+
+
+unsigned    char	WakeupTime = 0;
+unsigned	char	modesw = 0;
+unsigned	int		rx_hour = 0, rx_min = 0, rx_sec = 0;
+unsigned	int		OnTime[LED_ONOFF_CNT];
+unsigned	int		LedCycle_Msec;
+unsigned	int		LedOnDuty_Msec;
+unsigned	long	ZeroTimer = 0;
+unsigned	long	l_hour, l_min, l_sec;
+unsigned int 	SetDutyCycle = 0;
+
+
+unsigned    char	NightVolt = 0;
+unsigned    char	NightDayVolt = 0;
+
+
+bit   	FeedbackOn = 0;
+
+bit   	bActiveOn = 0;
+bit   	bPwmOn = 0;
+bit   	bSearchGps = 0;
+bit		bPPS_On = 0;
+bit		bPPS_Edge = 0;
+
+bit		bNight = 0;
+bit		bNightDay = 0;
+
+bit		bBlink_DutyOn = 0;
+
+
 unsigned int BeginTimer = 0;
 
 
 
 
-bit bSetSwPushOK1;
-bit bSetSw_UpEdge1;
-bit bSetSwPushOK2;
-bit bSetSw_UpEdge2;
+
+
 
 
 unsigned    char    SetSwCharterTimer1 = 0;
 unsigned    char    SetSwCharterTimer2 = 0;
 
+unsigned char InDayTimer = 0;
 
 
-typedef enum{DAY=0, EVENING=1, NIGHT=2, NONE=3} tag_CurDay;
-tag_CurDay	CurDayNight;
+
+
+
+
+
+
+
+
 
 // 5000이면 5V이다.
 unsigned int SetAVoltage=0; 
@@ -145,37 +230,44 @@ unsigned int StartTimer = 0;
 unsigned int AnalogValidTime = 0;
 
 
-#define fSIZE	4
-volatile const unsigned char Saved1Buf[fSIZE] = {0,}; /*this is the variable in FLASH where the old text resides*/
-volatile const unsigned char Saved3Buf[fSIZE] = {0,};
-
-unsigned int  SavedDutyCycle1 = 0;
-unsigned int  SavedSetA1_Volt = 0;
-unsigned int  SavedDutyCycle3 = 0;
-unsigned int  SavedSetA3_Volt = 0;
+#define WRSIZE	12
+volatile const unsigned char  arSavedBuf[WRSIZE] = {0, };
 
 
 
 
-extern void    PortInit(void);
+
+
+unsigned int SetStTimer = 0;
+
+
+
+
+
+extern  void  Initial(void);
+extern  void  InitTimer0(void);
+extern void    InitPort(void);
 extern void    UserBaudRate(void);
 extern void  Serial2Check(void);
 extern void GpsPPS1Chk(void);
 extern void LedBlinkModeInit(void);
 extern unsigned int ReSettingDayNigntChk(void);
 extern void ApaLampOnOff(void);
-extern bit IsAplLamp_On(void);
+extern bit IsBlink_On(void);
 extern void GpsRx2DataProc(void);
-extern void ChkSetSw_UpEdge(void);
+extern void ChkSetupSw(void);
 extern unsigned char GetDayEveningNight(void);
 extern void WriteVal(unsigned int DutyCycle, unsigned int SetAVoltage, volatile const unsigned char* DestBuf);
-extern void ReadVal(unsigned int* pSavedDutyCycle, unsigned int* pSavedSetA_Volt, 
-			 volatile const unsigned char* SavedBuf, unsigned int* pSetA_Volt);
 extern void GetAdValue(void);
 extern unsigned int GetDutyByCompareCurrent(unsigned int duty, unsigned int setVolt, 
 												  unsigned int inVolt, unsigned char CurDayNight);
 extern void SetApaLamp(void);
+extern void PwOnAplLamp(void);
 
 
+extern bit IsInLED_ON(unsigned char bLedState, unsigned char* Timer);
+
+extern unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
+                                     unsigned int Out_mV, unsigned char CurDayNight);
 
 

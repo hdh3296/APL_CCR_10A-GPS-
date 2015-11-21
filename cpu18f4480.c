@@ -19,7 +19,7 @@ __CONFIG(7, (EBTR0_OFF & EBTR1_OFF & EBTR2_OFF & EBTR3_OFF & EBTRB_OFF & 0xffff)
 
 
 
-void  Timer0Init(void)
+void  InitTimer0(void)
 {
   TMR0IE=1;
   TMR0IF=0;

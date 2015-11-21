@@ -22,7 +22,7 @@ void PwmOff(void)
 }
 
 
-void UpdatePwmDuty(unsigned int DutyCycle)
+void PwmOut(unsigned int DutyCycle)
 {
 	DC1B0 = (bit)DutyCycle; 	//update the PWM duty cycle 
 	DC1B1 = (bit)(DutyCycle>>1);
@@ -31,18 +31,19 @@ void UpdatePwmDuty(unsigned int DutyCycle)
 
 
 
-void Pwm1_Init(void)
+void InitPwm1(void)
 {	
 	TMR2IE=0;
 	TMR2IP=0;
 	TMR2IF=0;
-	CCP1CON=0x0;	/* select PWM mode */	
-
-	DutyCycle = DUTI_MAX; // Q???
-	UpdatePwmDuty(DutyCycle); // Q???
+	CCP1CON=0x0;	/* select PWM mode */
+	PwmOn(); // PWM ON	
 
 	PR2=0xff;			
 	T2CON=(0x06);		// 16x
+
+	DutyCycle = 0; // Q???
+	PwmOut(DutyCycle); // Q???
 }
 
 
