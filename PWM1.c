@@ -7,18 +7,18 @@
 // PWM Mode On
 void PwmOn(void)
 {
-	CCP1M0=1;
-	CCP1M1=1;
-	CCP1M2=1;
 	CCP1M3=1;
+	CCP1M2=1;
+	CCP1M1=0;
+	CCP1M0=0;
 }
 
 void PwmOff(void)
 {
-	CCP1M0=0;
-	CCP1M1=0;
-	CCP1M2=0;
 	CCP1M3=0;
+	CCP1M2=0;
+	CCP1M1=0;
+	CCP1M0=0;
 }
 
 

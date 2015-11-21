@@ -1046,9 +1046,9 @@ void main(void)
     TMR0IE = 1;
     SWDTEN = 1;  // Software Controlled Watchdog Timer Enable bit / 1 = Watchdog Timer is on
 
-    PwOnAplLamp();
-    Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);
-    SetDutyCycle = DutyCycle;
+//    PwOnAplLamp();
+//    Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);
+//    SetDutyCycle = DutyCycle;
 
     //LoadSetupValue();
     modesw = 0xff;
@@ -1058,11 +1058,17 @@ void main(void)
     msec100 = 0;
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
+	
+DutyCycle = 300;
+_LAMP_ON = TRUE;
+PwmOut(DutyCycle);	
 
     while (1)
     {
         CLRWDT();
-
+		
+		
+/*
         if (Set_Current > JUNG_GIJUN)
         {
             if (T2CON != 0x04)
@@ -1157,7 +1163,7 @@ void main(void)
 			bSetSt = TRUE;
 		}
 
-
+*/
 
     }
 }
