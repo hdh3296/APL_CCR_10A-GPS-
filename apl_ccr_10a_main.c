@@ -1126,6 +1126,8 @@ mySetA2_Val = stApl[2].SetA;
 			else if(bSetSwPushOK_Night)	AdChSel = ChangeAdChSel(AdChSel, 4);
 			else						AdChSel = ChangeAdChSel(AdChSel, 2);	
 			Set_AdCh(AdChSel);
+			
+			bAdConversion = FALSE;
 			DONE = 1;
         }
 
