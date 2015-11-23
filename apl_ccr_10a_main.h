@@ -279,7 +279,7 @@ extern void PwOnAplLamp(void);
 extern bit IsInLED_ON(unsigned char bLedState, unsigned char* Timer);
 
 extern unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
-                                       unsigned char CurDayNight);
+                                 unsigned char DayNig, unsigned int Offset);
 extern void ChkSwTwoTouch(void);
 extern void Chk232TxErr(void);
 extern void WriteProc(void);

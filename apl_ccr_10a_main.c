@@ -924,13 +924,10 @@ ULONG GetSetCurrent(unsigned int set_mV, unsigned char CurDayNight)
 
 
 unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
-                                 unsigned char DayNig)
+                                 unsigned char DayNig, unsigned int Offset)
 {
-    ULONG Offset;
-	ULONG i;
 	
 //	Offset = GetOffSet(stApl[0].Set_Current);	
-	Offset = 0;
 
     if (stApl[DayNig].Set_Current > In_Current) 
     {		
@@ -963,18 +960,18 @@ unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
 // 셋팅 스위치 눌렀을 때 APL 램프 셋팅 
 void OnSetAplLamp(tag_CurDay Sw_DayNig)
 {	
+	_LAMP_ON = TRUE; // LAMP ON
 	if (bCurA_IN_mV_Upd)
 	{
 		bCurA_IN_mV_Upd = FALSE;		
 		In_Current = GetInCurrent(CurA_IN_mV);	// 현재 Setting 및 In 전류 값 가져오기 
 		
-		DutyCycle = GetDutyByCmp(stApl[Sw_DayNig].DutyCycle, stApl[Sw_DayNig].Setting_mV, Sw_DayNig);
+		DutyCycle = GetDutyByCmp(stApl[Sw_DayNig].DutyCycle, stApl[Sw_DayNig].Setting_mV, Sw_DayNig, 0);
 		stApl[Sw_DayNig].DutyCycle = DutyCycle;
 //		DutyCycle_Avr = AvrDutyCycle(DutyCycle); // Q?? 
 	}
 	ChangPwmCycleRegedit(Sw_DayNig);
-	PwmOut(DutyCycle);
-	_LAMP_ON = TRUE; // LAMP ON	
+	PwmOut(DutyCycle);		
 }
 
 // 현재(실제) APL LAPM On, Off 처리 
@@ -999,9 +996,9 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 				In_Current = GetInCurrent(CurA_IN_mV);	// 현재 Setting 및 In 전류 값 가져오기 
 				
 				if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
-				{
-					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig);
-				}
+					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
+				//else
+					//DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 500);
 			}
 			ChangPwmCycleRegedit(CurDayNig);
 			PwmOut(DutyCycle);
@@ -1280,13 +1277,16 @@ void main(void)
 		{
 			if (bSetSt)
 			{
+				_LAMP_ON = TRUE; // LAMP ON
 				bSetSt = FALSE;
-				SetStTimer = 0;
 				DutyCycle = 0;
+				SetStTimer = 0;
+				ChangPwmCycleRegedit(SW_NIGHT);
+				PwmOut(DutyCycle);	
 			}
 			else
 			{
-				if(SetStTimer > 300)
+				if(SetStTimer > 1000)
 				{
 					if(stApl[SW_DAY].bSetSwPushOK)
 					{
