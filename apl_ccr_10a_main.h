@@ -212,8 +212,7 @@ unsigned int BeginTimer = 0;
 
 
 
-unsigned    char    SetSwCharterTimer1 = 0;
-unsigned    char    SetSwCharterTimer2 = 0;
+
 
 unsigned char InDayTimer = 0;
 
@@ -248,13 +247,13 @@ volatile const unsigned char  arSavedBuf[WRSIZE] = {0, };
 
 
 unsigned int SetStTimer = 0;
-unsigned int DaySwPushTimer = 0;
-unsigned int DaySwTouchCntTimer = 0;
 
-bit bDaySwSlightPush = FALSE;
-volatile unsigned char DaySwTouchCnt = 0;
-bit bDayBlinkEnab;
-bit bDayWriteEnab = FALSE;
+
+
+
+
+
+
 
 extern  void  Initial(void);
 extern  void  InitTimer0(void);

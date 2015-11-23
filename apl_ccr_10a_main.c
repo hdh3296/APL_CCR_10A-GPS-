@@ -546,8 +546,8 @@ void SetApaLamp(void)
     {
         bAn2_Updated = FALSE;
 
-        if (bSetSwPushOK_Day)		SetAVoltage = SetA1_Volt;
-        else if (bSetSwPushOK_Night)	SetAVoltage = SetA3_Volt;
+        if (stApl[0].bSetSwPushOK)		SetAVoltage = SetA1_Volt;
+        else if (stApl[2].bSetSwPushOK)	SetAVoltage = SetA3_Volt;
         // Ad2 와 Ad3(또는 Ad4) 값을 비교하여 Pwm 듀티 값을 증가 또는 감소 한다.
         DutyCycle = GetDutyByCompareCurrent(DutyCycle, SetAVoltage, A_IN_Volt, CurDayNight);
 
@@ -764,36 +764,36 @@ void ChkSetupSw(void)
 {
     if (_SW_SET_HI == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (SetSwCharterTimer1 > 50)
+        if (stApl[0].SetSwCharterTimer > 50)
         {
-            bSetSwPushOK_Day = TRUE;
+            stApl[0].bSetSwPushOK = TRUE;
         }
     }
     else  // 스위치를 뗐을 때 !
     {
-        SetSwCharterTimer1 = 0;
-        if (bSetSwPushOK_Day)
+        stApl[0].SetSwCharterTimer = 0;
+        if (stApl[0].bSetSwPushOK)
         {
-            bSetSw_UpEdge_Day = TRUE;
+            stApl[0].bSetSw_UpEdge = TRUE;
         }
-        bSetSwPushOK_Day = FALSE;
+        stApl[0].bSetSwPushOK = FALSE;
     }
 
     if (_SW_SET_LO == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (SetSwCharterTimer2 > 100)
+        if (stApl[2].SetSwCharterTimer > 100)
         {
-            bSetSwPushOK_Night = TRUE;
+            stApl[2].bSetSwPushOK = TRUE;
         }
     }
     else  // 스위치를 뗐을 때 !
     {
-        SetSwCharterTimer2 = 0;
-        if (bSetSwPushOK_Night)
+        stApl[2].SetSwCharterTimer = 0;
+        if (stApl[2].bSetSwPushOK)
         {
-            bSetSw_UpEdge_Night = TRUE;
+            stApl[2].bSetSw_UpEdge = TRUE;
         }
-        bSetSwPushOK_Night = FALSE;
+        stApl[2].bSetSwPushOK = FALSE;
     }
 }
 
@@ -834,11 +834,11 @@ void GetAdValue(void)
 {
     V_IN_Volt = AdValue[1];
     A_IN_Volt = AdValue[2];
-    if (bSetSwPushOK_Day)
+    if (stApl[0].bSetSwPushOK)
     {
         SetA1_Volt = AdValue[3];
     }
-    if (bSetSwPushOK_Night)
+    if (stApl[2].bSetSwPushOK)
     {
         SetA3_Volt = AdValue[4];
     }
@@ -1019,46 +1019,89 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 
 void chkSwTwoTouch(void)
 {	
-	if (bSetSwPushOK_Day)
+	// Day
+	if (stApl[0].bSetSwPushOK)
 	{
-		if (DaySwPushTimer < 500)
+		if (stApl[0].SwPushTimer < 500)
 		{
-			bDaySwSlightPush = TRUE;
+			stApl[0].bSwSlightPush = TRUE;
 		}
 		else
 		{
-			bDaySwSlightPush = FALSE;
+			stApl[0].bSwSlightPush = FALSE;
 		}
 	}
 	else
 	{
-		DaySwPushTimer = 0;
-		if (bDaySwSlightPush)
+		stApl[0].SwPushTimer = 0;
+		if (stApl[0].bSwSlightPush)
 		{
-			DaySwTouchCnt++;
+			stApl[0].SwTouchCnt++;
 		}
-		bDaySwSlightPush = FALSE;
+		stApl[0].bSwSlightPush = FALSE;
 	}
 
-	if (DaySwTouchCnt)
+	if (stApl[0].SwTouchCnt)
 	{
-		if (DaySwTouchCntTimer < 1000)
+		if (stApl[0].SwTouchCntTimer < 1000)
 		{
-			if (DaySwTouchCnt >= 2)
+			if (stApl[0].SwTouchCnt >= 2)
 			{			
-				bDayBlinkEnab = !bDayBlinkEnab; 
-				DaySwTouchCnt = 0;
+				stApl[0].bBlinkEnab = !stApl[0].bBlinkEnab; 
+				stApl[0].SwTouchCnt = 0;
 			}
 		}
 		else
 		{
-			DaySwTouchCnt = 0;
+			stApl[0].SwTouchCnt = 0;
 		}
 	}
 	else
 	{
-		DaySwTouchCntTimer = 0;
+		stApl[0].SwTouchCntTimer = 0;
 	}
+
+	// Night 
+	if (stApl[2].bSetSwPushOK)
+	{
+		if (stApl[2].SwPushTimer < 500)
+		{
+			stApl[2].bSwSlightPush = TRUE;
+		}
+		else
+		{
+			stApl[2].bSwSlightPush = FALSE;
+		}
+	}
+	else
+	{
+		stApl[2].SwPushTimer = 0;
+		if (stApl[2].bSwSlightPush)
+		{
+			stApl[2].SwTouchCnt++;
+		}
+		stApl[2].bSwSlightPush = FALSE;
+	}
+
+	if (stApl[2].SwTouchCnt)
+	{
+		if (stApl[2].SwTouchCntTimer < 1000)
+		{
+			if (stApl[2].SwTouchCnt >= 2)
+			{			
+				stApl[2].bBlinkEnab = !stApl[2].bBlinkEnab; 
+				stApl[2].SwTouchCnt = 0;
+			}
+		}
+		else
+		{
+			stApl[2].SwTouchCnt = 0;
+		}
+	}
+	else
+	{
+		stApl[2].SwTouchCntTimer = 0;
+	}	
 }
 
 
@@ -1099,7 +1142,7 @@ void main(void)
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
 	
-	bDayBlinkEnab = TRUE;	
+	stApl[0].bBlinkEnab = TRUE;	stApl[2].bBlinkEnab = TRUE;	
 	
     while (1)
     {
@@ -1147,19 +1190,23 @@ mySetA2_Val = stApl[2].SetA;
         ChkSetupSw(); // 스위치 엣지 및 bSetSwPushOK 여부 가져온다.
 
         // 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
-        if (bSetSw_UpEdge_Day)
+        if (stApl[0].bSetSw_UpEdge)
         {
-			if (bDayWriteEnab)
+			if (stApl[0].bWriteEnab)
 			{	
 				WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
-				bSetSw_UpEdge_Day = FALSE;
-				bDayWriteEnab = FALSE;
+				stApl[0].bSetSw_UpEdge = FALSE;
+				stApl[0].bWriteEnab = FALSE;
 			}
         }
-        if (bSetSw_UpEdge_Night)
+        if (stApl[2].bSetSw_UpEdge)
         {
-            WriteVal(DutyCycle, stApl[SET_NIGHT].SetA, (arSavedBuf + (SET_NIGHT * 4)));
-			bSetSw_UpEdge_Night = FALSE;
+			if (stApl[2].bWriteEnab)
+			{			
+            	WriteVal(DutyCycle, stApl[SET_NIGHT].SetA, (arSavedBuf + (SET_NIGHT * 4)));
+				stApl[2].bSetSw_UpEdge = FALSE;
+				stApl[2].bWriteEnab = FALSE;
+			}
         }	
 
 		// AD 처리 
@@ -1169,8 +1216,8 @@ mySetA2_Val = stApl[2].SetA;
 			GetMyAD();
 			
 			// 채널 변경 
-			if(bSetSwPushOK_Day)		AdChSel = ChangeAdChSel(AdChSel, 3);
-			else if(bSetSwPushOK_Night)	AdChSel = ChangeAdChSel(AdChSel, 4);
+			if(stApl[0].bSetSwPushOK)		AdChSel = ChangeAdChSel(AdChSel, 3);
+			else if(stApl[2].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
 			else						AdChSel = ChangeAdChSel(AdChSel, 2);	
 			Set_AdCh(AdChSel);
 			
@@ -1179,7 +1226,7 @@ mySetA2_Val = stApl[2].SetA;
         }
 
 		// AMP Lamp 셋업값 저장 및 OnOff 출력 
-		if ((DaySwPushTimer > 1000) || bSetSwPushOK_Night)
+		if ((stApl[0].SwPushTimer > 1000) || (stApl[2].SwPushTimer > 1000))
 		{
 			if (bSetSt)
 			{
@@ -1191,16 +1238,17 @@ mySetA2_Val = stApl[2].SetA;
 			{
 				if(SetStTimer > 300)
 				{
-					if(bSetSwPushOK_Day)
+					if(stApl[0].bSetSwPushOK)
 					{
 						Set_Current = GetSetCurrent(stApl[SET_DAY].SetA, SET_DAY);
 						SetAplLamp(SET_DAY);
-						bDayWriteEnab = TRUE;
+						stApl[0].bWriteEnab = TRUE;
 					}
-					if(bSetSwPushOK_Night)
+					if(stApl[2].bSetSwPushOK)
 					{
 						Set_Current = GetSetCurrent(stApl[SET_NIGHT].SetA, SET_NIGHT);
 						SetAplLamp(SET_NIGHT);
+						stApl[2].bWriteEnab = TRUE;
 					}					
 				}
 			}
@@ -1236,16 +1284,17 @@ void interrupt isr(void)
         TMR0H = MSEC_H;
 
         
-		if (bDayBlinkEnab == FALSE)	bBlink_DutyOn = TRUE;
+		if ((CurDayNight == DAY) && (stApl[0].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
+		else if ((CurDayNight == NIGHT) && (stApl[2].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
 		else bBlink_DutyOn = IsBlink_On();
 
         Com1SerialTime++;
         Com2SerialTime++;
 
-        if (SetSwCharterTimer1 < 250)
-            SetSwCharterTimer1++;
-        if (SetSwCharterTimer2 < 250)
-            SetSwCharterTimer2++;
+        if (stApl[0].SetSwCharterTimer < 250)
+            stApl[0].SetSwCharterTimer++;
+        if (stApl[2].SetSwCharterTimer < 250)
+            stApl[2].SetSwCharterTimer++;
 
         if (BeginTimer < 1000)
             BeginTimer++;
@@ -1271,8 +1320,10 @@ void interrupt isr(void)
 
         }
 
-		if(DaySwPushTimer < 0xffff) DaySwPushTimer++;
-		if(DaySwTouchCntTimer < 0xffff) DaySwTouchCntTimer++;
+		if(stApl[0].SwPushTimer < 0xffff) stApl[0].SwPushTimer++;
+		if(stApl[0].SwTouchCntTimer < 0xffff) stApl[0].SwTouchCntTimer++;
+		if(stApl[2].SwPushTimer < 0xffff) stApl[2].SwPushTimer++;
+		if(stApl[2].SwTouchCntTimer < 0xffff) stApl[2].SwTouchCntTimer++;		
     }
 
     // GPS Rx2 통신 인터럽트

@@ -100,7 +100,7 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 	
     if (bAdConversion)
     {
-		if ((bSetSwPushOK_Day) || (bSetSwPushOK_Night))		nADSUM = 20;
+		if ((stApl[0].bSetSwPushOK) || (stApl[2].bSetSwPushOK))		nADSUM = 20;
 		else 												nADSUM = 10;
 		
         SumAD = SumAD + (unsigned long)ADBuf; // 12∫Ò∆Æ AD 

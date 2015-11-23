@@ -31,23 +31,30 @@ ULONG Multip[] = {(SET_AMP_PER_VOLT1), (SET_AMP_PER_VOLT2), (SET_AMP_PER_VOLT3)}
 typedef enum{DAY = 0, EVENING = 1, NIGHT = 2, NONE = 100} tag_CurDay;
 tag_CurDay	CurDayNight = 100, BefCurDayNight = 100;
 
-bit bSetSwPushOK_Day = FALSE;
-bit bSetSw_UpEdge_Day = FALSE;
-bit bSetSwPushOK_Night = FALSE;
-bit bSetSw_UpEdge_Night = FALSE;
+
 
 UCHAR nADSUM = 0;
 
 typedef struct 
 {
-	unsigned int SetA;
+	unsigned int 	SetA;
+	unsigned int 	SwPushTimer;
+	unsigned char 	SwTouchCnt;
+	unsigned int 	SwTouchCntTimer;
+	unsigned char   SetSwCharterTimer;
+	
+	unsigned char 	bSetSwPushOK	: 1;
+	unsigned char 	bSetSw_UpEdge 	: 1;
+	unsigned char 	bSwSlightPush 	: 1;
+	unsigned char 	bBlinkEnab		: 1;
+	unsigned char   bWriteEnab 		: 1;
+	
 }tag_Apl;
 tag_Apl		stApl[3] = {
 					{0,},	// Set0
 					{0,},	// Set1
 					{0,},	// Set2
 			};
-
 
 
 
