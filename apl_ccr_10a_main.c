@@ -729,10 +729,10 @@ bit IsInLED_ON(unsigned char bLedState, unsigned char* Timer)
     bBlkLedOn = TRUE;
     if (bLedState)	//	High
     {
-        if (*Timer > 90) // High 가 90ms 유지 되면
+        if (*Timer > 90) // High 가 90ms 유지 되면 낮이다.
             bBlkLedOn = FALSE;
     }
-    else 	// Low
+    else 	// Low, 60Hz 이면 밤이다. 
     {
         *Timer = 0;
         bBlkLedOn =  TRUE;
@@ -764,7 +764,7 @@ void ChkSetupSw(void)
 {
     if (_SW_SET_HI == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (SetSwCharterTimer1 > 100)
+        if (SetSwCharterTimer1 > 50)
         {
             bSetSwPushOK_Day = TRUE;
         }
@@ -1017,7 +1017,49 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 	}
 }
 
+void chkSwTwoTouch(void)
+{	
+	if (bSetSwPushOK_Day)
+	{
+		if (DaySwPushTimer < 500)
+		{
+			bDaySwSlightPush = TRUE;
+		}
+		else
+		{
+			bDaySwSlightPush = FALSE;
+		}
+	}
+	else
+	{
+		DaySwPushTimer = 0;
+		if (bDaySwSlightPush)
+		{
+			DaySwTouchCnt++;
+		}
+		bDaySwSlightPush = FALSE;
+	}
 
+	if (DaySwTouchCnt)
+	{
+		if (DaySwTouchCntTimer < 1000)
+		{
+			if (DaySwTouchCnt >= 2)
+			{			
+				bDayBlinkEnab = !bDayBlinkEnab; 
+				DaySwTouchCnt = 0;
+			}
+		}
+		else
+		{
+			DaySwTouchCnt = 0;
+		}
+	}
+	else
+	{
+		DaySwTouchCntTimer = 0;
+	}
+}
 
 
 ///////////////////////////
@@ -1057,7 +1099,8 @@ void main(void)
     Com1SerialTime = 0;
     Com1RxStatus = STX_CHK;
 	
-
+	bDayBlinkEnab = TRUE;	
+	
     while (1)
     {
         CLRWDT();
@@ -1106,8 +1149,12 @@ mySetA2_Val = stApl[2].SetA;
         // 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
         if (bSetSw_UpEdge_Day)
         {
-            WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
-			bSetSw_UpEdge_Day = FALSE;
+			if (bDayWriteEnab)
+			{	
+				WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
+				bSetSw_UpEdge_Day = FALSE;
+				bDayWriteEnab = FALSE;
+			}
         }
         if (bSetSw_UpEdge_Night)
         {
@@ -1132,7 +1179,7 @@ mySetA2_Val = stApl[2].SetA;
         }
 
 		// AMP Lamp 셋업값 저장 및 OnOff 출력 
-		if (bSetSwPushOK_Day || bSetSwPushOK_Night)
+		if ((DaySwPushTimer > 1000) || bSetSwPushOK_Night)
 		{
 			if (bSetSt)
 			{
@@ -1148,6 +1195,7 @@ mySetA2_Val = stApl[2].SetA;
 					{
 						Set_Current = GetSetCurrent(stApl[SET_DAY].SetA, SET_DAY);
 						SetAplLamp(SET_DAY);
+						bDayWriteEnab = TRUE;
 					}
 					if(bSetSwPushOK_Night)
 					{
@@ -1171,7 +1219,7 @@ mySetA2_Val = stApl[2].SetA;
 			bStEnab = TRUE;
 		}
 
-
+		chkSwTwoTouch();
 
     }
 }
@@ -1187,7 +1235,9 @@ void interrupt isr(void)
         TMR0L = MSEC_L;
         TMR0H = MSEC_H;
 
-        bBlink_DutyOn = IsBlink_On();
+        
+		if (bDayBlinkEnab == FALSE)	bBlink_DutyOn = TRUE;
+		else bBlink_DutyOn = IsBlink_On();
 
         Com1SerialTime++;
         Com2SerialTime++;
@@ -1220,6 +1270,9 @@ void interrupt isr(void)
             if (NightDaySetTime < 100)	NightDaySetTime++;
 
         }
+
+		if(DaySwPushTimer < 0xffff) DaySwPushTimer++;
+		if(DaySwTouchCntTimer < 0xffff) DaySwTouchCntTimer++;
     }
 
     // GPS Rx2 통신 인터럽트
