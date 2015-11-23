@@ -982,6 +982,7 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 {
 	if (bBlink_DutyOn && (CurDayNight != NONE)) // Blink Led 가 On 일 때
 	{
+		_LAMP_ON = TRUE; // LAMP ON
 		if (bStEnab)
 		{
 			bStEnab = FALSE;
@@ -990,7 +991,7 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 			DutyCycle = stApl[CurDayNight].DutyCycle;
 			ChangPwmCycleRegedit(CurDayNight);
 			PwmOut(DutyCycle);
-			_LAMP_ON = TRUE; // LAMP ON
+			
 		}
 		else
 		{
@@ -1010,10 +1011,10 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 	}
 	else // Blink Led 가 Off 일 때
 	{
+		_LAMP_ON = FALSE; // LAMP OFF 
 		DutyCycle = ((stApl[CurDayNight].DutyCycle * 3) / 100);
 		ChangPwmCycleRegedit(CurDayNight);
 		PwmOut(DutyCycle);	
-		_LAMP_ON = FALSE; // LAMP OFF 
 		bStEnab = TRUE;
 		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
 	}
