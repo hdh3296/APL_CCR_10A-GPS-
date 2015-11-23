@@ -690,7 +690,7 @@ void GpsRx2DataProc(void)
 
     if (Com2RxBuffer[18] == 'A') // GPS 수신 GOOD !
     {
-        _LED_GpsGoodState = !_LED_GpsGoodState; // GPS 수신 GOOD 상태 LED
+	    _LED_GpsGoodState = !_LED_GpsGoodState; // GPS 수신 GOOD 상태 LED
         i = (Com2RxBuffer[7] - 0x30) * 10;
         i = (Com2RxBuffer[8] - 0x30) + i;
         rx_hour = i;
@@ -1268,7 +1268,7 @@ void main(void)
 			// 채널 변경 
 			if(stApl[SW_DAY].bSetSwPushOK)			AdChSel = ChangeAdChSel(AdChSel, 3);
 			else if(stApl[SW_NIGHT].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
-			else									AdChSel = ChangeAdChSel(AdChSel, 2);	
+			else									AdChSel = ChangeAdChSel(AdChSel, 1);	
 			Set_AdCh(AdChSel);
 			
 			bAdConversion = FALSE;

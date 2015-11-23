@@ -2,6 +2,7 @@
 
 #include    <pic18.h>
 #include	"Analog.h"
+#include	"apl_ccr_10a_main.h"
 
 
 
@@ -101,7 +102,6 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 	
     if (bAdConversion)
     {		
-		
 		myAdBuf[SumCnt] = ADBuf;
         SumAD = SumAD + (unsigned long)ADBuf; // 12비트 AD 
 		SumCnt++;
@@ -173,15 +173,22 @@ void GetMyAD(void)
 
 UCHAR ChangeAdChSel(UCHAR AdSel, tag_CurDay ch)
 {	
+	static unsigned char cnt = 0;
+	
     switch (AdSel)
     {
     case 1: // V_IN 
         AdSel = 2;
         break;
     case 2: // A_IN 
-        AdSel = ch;
+    	cnt++;
+        if(cnt > 100)
+        {
+			AdSel = ch; // 셋팅모드 일때: 3 or 4  / 일반(nomal)모드 일때: 1 
+			cnt = 0;
+        }
         break;
-    case 3: // 낮 셋팅 스위치 볼륨 
+    case 3: // 낮 셋팅 스위치 볼륨     	
         AdSel = 1;
         break;
     case 4: // 밤 셋팅 스위치 볼륨 
