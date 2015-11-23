@@ -1286,10 +1286,13 @@ mySetA2_Val = stApl[2].SetA;
 			bStEnab = TRUE;
 		}
 		// 일반 모드에서 APL LAMP On, OFF 처리 
-		else
+		else 		
 		{
-			OnOffAplLamp(CurDayNight);
-			bSetSt = TRUE;
+			if((stApl[0].bWriteEnab == FALSE) && (stApl[2].bWriteEnab == FALSE))
+			{
+				OnOffAplLamp(CurDayNight);
+				bSetSt = TRUE;
+			}
 		}	
 
     }
