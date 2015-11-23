@@ -93,13 +93,16 @@ void ADRead(void)
 }
 
 
-
+unsigned int myAdBuf[10] = {0,};
 bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 {
 	unsigned long AvrAD;
+	unsigned char i;
 	
     if (bAdConversion)
     {		
+		
+		myAdBuf[SumCnt] = ADBuf;
         SumAD = SumAD + (unsigned long)ADBuf; // 12비트 AD 
 		SumCnt++;
 
@@ -116,9 +119,12 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 
 			arInPut_mV[AdChSel] = (unsigned int)((AvrAD * 1000) / 819); // 12비트 AD 기준 최대 5V에서 AD 값을 mV로 환산 !!! 
 			arIs_AdUpd[AdChSel] = TRUE;
+
+			for(i=0; i<SumCnt; i++) myAdBuf[i] = 0;
 			
             SumAD = 0;
             SumCnt = 0;
+			
 			return TRUE;       
         }
         bAdConversion = FALSE;

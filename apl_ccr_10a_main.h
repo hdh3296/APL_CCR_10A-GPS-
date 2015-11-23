@@ -111,7 +111,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define     MSEC_L    0x18
 
 // LED 깜빡이는 1싸이클에 대하여 ON 듀티 시간(msec) 값을 구한다.
-#define		COUNT_MIN	30      	// 1분당  LED ON 횟수
+#define		COUNT_MIN	20      	// 1분당  LED ON 횟수
 #define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%)
 #define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
 // Lamp Blink에서의 On 주기 시간(ms) 
@@ -284,5 +284,5 @@ extern void ChkSwTwoTouch(void);
 extern void ChangPwmCycleRegedit(void);
 extern void Chk232TxErr(void);
 extern void WriteProc(void);
-
+extern void GetSetInCurrent(void);
 

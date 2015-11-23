@@ -928,10 +928,7 @@ unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
     ULONG Offset;
 	ULONG i;
 
-    if(in_mV >= 600) 
-		In_Current = (((ULONG)in_mV - 600) * 1000) / 60;  // (630 - 600)/60 * 1000 = 500 mA 
-	else 
-		In_Current = 0;
+
 	
 //	Offset = GetOffSet(Set_Current);	
 	Offset = 0;
@@ -991,7 +988,7 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 			_LAMP_ON = TRUE; // LAMP ON
 			SetDutyCycle = DutyCycle;
 			
-			Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);	
+			
 		}
 		else
 		{
@@ -1163,6 +1160,16 @@ void WriteProc(void)
 
 }
 
+void GetSetInCurrent(void)
+{
+	Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);	
+	
+	if(CurA_IN_mV >= 600) 
+		In_Current = (((ULONG)CurA_IN_mV - 600) * 1000) / 60;  // (630 - 600)/60 * 1000 = 500 mA 
+	else 
+		In_Current = 0;
+}
+
 ///////////////////////////
 //   메인 함수 				//
 ///////////////////////////
@@ -1256,6 +1263,9 @@ mySetA2_Val = stApl[2].SetA;
 			DONE = 1;
         }
 
+		// 현재 Setting 및 In 전류 값 가져오기 
+		GetSetInCurrent();	
+		
 		// 셋팅모드에서 AMP Lamp 셋업값 얻어온다.
 		if ((stApl[0].SwPushTimer > 1000) || (stApl[2].SwPushTimer > 1000))
 		{
@@ -1293,8 +1303,7 @@ mySetA2_Val = stApl[2].SetA;
 				OnOffAplLamp(CurDayNight);
 				bSetSt = TRUE;
 			}
-		}	
-
+		}
     }
 }
 
