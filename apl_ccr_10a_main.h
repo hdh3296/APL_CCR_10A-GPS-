@@ -234,7 +234,7 @@ unsigned int A_IN_Volt=0; // A_IN Voltage, AN3
 unsigned int V_IN_Volt=0; // V_IN Voltage, AN4
 
 bit bAgoBlkLedOff;
-unsigned int StartTimer = 0;
+
 unsigned int AnalogValidTime = 0;
 
 
@@ -279,9 +279,9 @@ extern void PwOnAplLamp(void);
 extern bit IsInLED_ON(unsigned char bLedState, unsigned char* Timer);
 
 extern unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
-                                     unsigned int Out_mV, unsigned char CurDayNight);
+                                       unsigned char CurDayNight);
 extern void ChkSwTwoTouch(void);
 extern void Chk232TxErr(void);
 extern void WriteProc(void);
-extern void GeInCurrent(void);
+
 

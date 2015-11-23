@@ -63,7 +63,7 @@ tag_Apl		stApl[3] = {
 
 unsigned int CurA_IN_mV = 0;
 unsigned int CurV_IN = 0;
-bit bCurA_IN_mVUpd = FALSE;
+bit bCurA_IN_mV_Upd = FALSE;
 
 
 ULONG In_Current;  // 변환된 입력 피드백 전류 값
@@ -72,10 +72,9 @@ ULONG In_Current;  // 변환된 입력 피드백 전류 값
 bit bSetSt= FALSE;
 bit bStEnab = FALSE;
 
-volatile UINT mySetA0_Val = 0;
-volatile UINT mySetA2_Val = 0;
 
 extern void ReadVal(volatile const UCHAR* SavedBuf, UINT* pSetA_Volt, UINT* pDutyCycle);
 extern ULONG GetSetCurrent(unsigned int set_mV, unsigned char CurDayNight);
-extern void SetAplLamp(tag_CurDay CurDayNight);
+extern void OnSetAplLamp(tag_CurDay CurDayNight);
 extern void ChangPwmCycleRegedit(tag_CurDay CurDayNight);
+extern ULONG GetInCurrent(ULONG CurA_IN_mV);

@@ -155,7 +155,7 @@ void GetMyAD(void)
 				break;
 			case 2:
 				CurA_IN_mV = arInPut_mV[ch];
-				bCurA_IN_mVUpd = TRUE;
+				bCurA_IN_mV_Upd = TRUE;
 				break;
 			case 1:
 				CurV_IN = arInPut_mV[ch];
