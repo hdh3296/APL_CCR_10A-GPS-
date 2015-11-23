@@ -99,14 +99,11 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 	unsigned long AvrAD;
 	
     if (bAdConversion)
-    {
-		if ((stApl[0].bSetSwPushOK) || (stApl[2].bSetSwPushOK))		nADSUM = 20;
-		else 												nADSUM = 10;
-		
+    {		
         SumAD = SumAD + (unsigned long)ADBuf; // 12비트 AD 
 		SumCnt++;
 
-        if (SumCnt >= nADSUM)
+        if (SumCnt >= 10)
         {
             if (SumAD > 0)
             {
@@ -136,9 +133,6 @@ void GetMyAD(void)
 {
 	UCHAR ch;
 
-	static unsigned long int Sum[ADCH_MAX] = 0;
-	static unsigned int 	 Cnt[ADCH_MAX] = 0;
-
 	for (ch=0; ch<ADCH_MAX; ch++)
 	{
 		if (arIs_AdUpd[ch])
@@ -148,26 +142,10 @@ void GetMyAD(void)
 			case 0:
 				break;
 			case 3: // 낮 일 때 
-				Sum[ch] = Sum[ch] + (unsigned long int)arInPut_mV[ch];
-				Cnt[ch]++;
-
-				if (Cnt[ch] >= 10)
-				{
-					stApl[SET_DAY].SetA = (unsigned int)(Sum[ch] / Cnt[ch]); // 낮 셋팅 값 저장 (0)
-					Sum[ch] = 0;
-					Cnt[ch] = 0;
-				}
+				stApl[SET_DAY].SetA = arInPut_mV[ch]; // 낮 셋팅 값 저장 (0)
 				break;				
 			case 4: // 밤 일 때 	
-				Sum[ch] = Sum[ch] + (unsigned long int)arInPut_mV[ch];
-				Cnt[ch]++;
-
-				if (Cnt[ch] >= 10)
-				{
-					stApl[SET_NIGHT].SetA = (unsigned int)(Sum[ch] / Cnt[ch]); // 밤 셋팅값 저장 (2)
-					Sum[ch] = 0;
-					Cnt[ch] = 0;
-				}
+				stApl[SET_NIGHT].SetA = arInPut_mV[ch]; // 밤 셋팅값 저장 (2)
 				break;
 			case 2:
 				CurA_IN_mV = arInPut_mV[ch];
@@ -180,8 +158,7 @@ void GetMyAD(void)
 				break;
 			}
 
-			for (ch=0; ch<ADCH_MAX; ch++)	
-				arIs_AdUpd[ch] = FALSE;
+			for (ch=0; ch<ADCH_MAX; ch++)	arIs_AdUpd[ch] = FALSE;
 			break;
 		}
 	}	

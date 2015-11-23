@@ -33,7 +33,6 @@ tag_CurDay	CurDayNight = 100, BefCurDayNight = 100;
 
 
 
-UCHAR nADSUM = 0;
 
 typedef struct 
 {
