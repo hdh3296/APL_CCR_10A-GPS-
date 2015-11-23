@@ -899,11 +899,11 @@ void PwOnAplLamp(void)
         if (CurDayNight == NONE)
             DutyCycle = 0x0;
 		else
-			DutyCycle = stApl[CurDayNight].DutyCycle;
-     
+			DutyCycle = stApl[CurDayNight].DutyCycle; 
+		_LAMP_ON = TRUE;
 		ChangPwmCycleRegedit(CurDayNight);
         PwmOut(DutyCycle);
-		_LAMP_ON = TRUE;
+		
         CLRWDT();
     }
     while (BeginTimer < 100);
