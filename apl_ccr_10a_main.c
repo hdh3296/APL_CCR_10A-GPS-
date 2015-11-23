@@ -892,7 +892,7 @@ void PwOnAplLamp(void)
 {
     do
     {
-        CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
+        BefCurDayNight = CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
         if (CurDayNight == NONE)
             DutyCycle = 0x0;
         else
@@ -1162,6 +1162,13 @@ mySetA2_Val = stApl[2].SetA;
 		{
 			OnOffAplLamp(CurDayNight);
 			bSetSt = TRUE;
+		}
+		
+		// 낮, 밤이 바뀔 때 변수 초기화 
+		if (CurDayNight != BefCurDayNight)
+		{
+			BefCurDayNight = CurDayNight;
+			bStEnab = TRUE;
 		}
 
 
