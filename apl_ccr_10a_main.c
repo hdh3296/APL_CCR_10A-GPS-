@@ -762,6 +762,7 @@ unsigned char GetDayEveningNight(void)
 
 void ChkSetupSw(void)
 {
+	// 낮 스위치 
     if (_SW_SET_HI == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
         if (stApl[0].SetSwCharterTimer > 50)
@@ -779,9 +780,10 @@ void ChkSetupSw(void)
         stApl[0].bSetSwPushOK = FALSE;
     }
 
+	// 밤 스위치 
     if (_SW_SET_LO == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (stApl[2].SetSwCharterTimer > 100)
+        if (stApl[2].SetSwCharterTimer > 50)
         {
             stApl[2].bSetSwPushOK = TRUE;
         }
@@ -1218,7 +1220,7 @@ mySetA2_Val = stApl[2].SetA;
 			// 채널 변경 
 			if(stApl[0].bSetSwPushOK)		AdChSel = ChangeAdChSel(AdChSel, 3);
 			else if(stApl[2].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
-			else						AdChSel = ChangeAdChSel(AdChSel, 2);	
+			else							AdChSel = ChangeAdChSel(AdChSel, 2);	
 			Set_AdCh(AdChSel);
 			
 			bAdConversion = FALSE;
