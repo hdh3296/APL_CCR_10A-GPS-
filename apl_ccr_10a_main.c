@@ -1019,7 +1019,7 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 	}
 }
 
-void chkSwTwoTouch(void)
+void ChkSwTwoTouch(void)
 {	
 	// Day
 	if (stApl[0].bSetSwPushOK)
@@ -1107,6 +1107,62 @@ void chkSwTwoTouch(void)
 }
 
 
+// 기준 셋팅값에 따라 PWM 주기 레지스트 설정 값 변경 
+void ChangPwmCycleRegedit(void)
+{
+	if (Set_Current > JUNG_GIJUN)
+	{
+		if (T2CON != 0x04)
+			T2CON = 0x04; // 2000천 간델라 일 떄 !
+	}
+	else
+	{
+		if (T2CON != 0x06)
+			T2CON = 0x06; // 2000천 간델라 일 떄 !
+	}
+}
+
+// Tx 에러일 경우 대비, Tx리셋 및 Disable
+void Chk232TxErr(void)
+{
+	if (Com1RxStatus == TX_SET)
+	{
+		if (Com1SerialTime > 3)
+		{
+			Com1SerialTime = 0;
+			Com1RxStatus = STX_CHK;
+			Com1TxCurCnt = 0;
+			Com1TxTotalCnt = 0;
+			TX1IE = 0;
+		}
+	}
+
+}
+
+// 셋업 모드에서 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
+void WriteProc(void)
+{
+	if (stApl[0].bSetSw_UpEdge)
+	{
+		if (stApl[0].bWriteEnab)
+		{	
+			WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
+			stApl[0].bSetSw_UpEdge = FALSE;
+			stApl[0].bWriteEnab = FALSE;
+		}
+	}
+	if (stApl[2].bSetSw_UpEdge)
+	{
+		if (stApl[2].bWriteEnab)
+		{			
+			WriteVal(DutyCycle, stApl[SET_NIGHT].SetA, (arSavedBuf + (SET_NIGHT * 4)));
+			stApl[2].bSetSw_UpEdge = FALSE;
+			stApl[2].bWriteEnab = FALSE;
+		}
+	}	
+
+}
+
 ///////////////////////////
 //   메인 함수 				//
 ///////////////////////////
@@ -1153,30 +1209,8 @@ void main(void)
 mySetA0_Val = stApl[0].SetA;	
 mySetA2_Val = stApl[2].SetA;
 
-
-        if (Set_Current > JUNG_GIJUN)
-        {
-            if (T2CON != 0x04)
-                T2CON = 0x04; // 2000천 간델라 일 떄 !
-        }
-        else
-        {
-            if (T2CON != 0x06)
-                T2CON = 0x06; // 2000천 간델라 일 떄 !
-        }
-
-        // Tx 에러일 경우 대비, Tx리셋 및 Disable
-        if (Com1RxStatus == TX_SET)
-        {
-            if (Com1SerialTime > 3)
-            {
-                Com1SerialTime = 0;
-                Com1RxStatus = STX_CHK;
-                Com1TxCurCnt = 0;
-                Com1TxTotalCnt = 0;
-                TX1IE = 0;
-            }
-        }		
+		ChangPwmCycleRegedit(); 
+		Chk232TxErr();		
 
 		// Gps 232Rx 데이타 수신
         if (Com2RxStatus == RX_GOOD) // GPS RX2 통신 GOOD !
@@ -1185,31 +1219,26 @@ mySetA2_Val = stApl[2].SetA;
             GpsRx2DataProc();
         }
 		GpsPPS1Chk(); // GPS Puls 체크
-        //ReSettingDayNigntChk();
-        CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 가져온다. 
-        if(CurDayNight == NIGHT) _LED_NIG = LED_NIG_ON;
-		else			_LED_NIG = LED_NIG_OFF;
-        ChkSetupSw(); // 스위치 엣지 및 bSetSwPushOK 여부 가져온다.
 
-        // 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
-        if (stApl[0].bSetSw_UpEdge)
-        {
-			if (stApl[0].bWriteEnab)
-			{	
-				WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
-				stApl[0].bSetSw_UpEdge = FALSE;
-				stApl[0].bWriteEnab = FALSE;
-			}
-        }
-        if (stApl[2].bSetSw_UpEdge)
-        {
-			if (stApl[2].bWriteEnab)
-			{			
-            	WriteVal(DutyCycle, stApl[SET_NIGHT].SetA, (arSavedBuf + (SET_NIGHT * 4)));
-				stApl[2].bSetSw_UpEdge = FALSE;
-				stApl[2].bWriteEnab = FALSE;
-			}
-        }	
+		//  셋업모드의 PwmDutyCycle, 셋팅값 저장  
+		WriteProc();
+
+		// 낮, 밤 체크 
+		// 밤 일때 NIG LED ON
+        CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 가져온다. 
+        if(CurDayNight == NIGHT) 	_LED_NIG = LED_NIG_ON;
+		else						_LED_NIG = LED_NIG_OFF;
+		// 낮, 밤이 바뀔 때 처리 
+		if (CurDayNight != BefCurDayNight)
+		{
+			BefCurDayNight = CurDayNight;
+			bStEnab = TRUE;
+		}		
+
+		// 스위치가 On 및 Edge 여부 체크 
+        ChkSetupSw(); 
+		// 스위치 Two Touch 여부 체크 
+		ChkSwTwoTouch();
 
 		// AD 처리 
         if(IsUdtAd(arInPut_mV, arIs_AdUpd, AdChSel)) // input AD 값 얻음.
@@ -1227,7 +1256,7 @@ mySetA2_Val = stApl[2].SetA;
 			DONE = 1;
         }
 
-		// AMP Lamp 셋업값 저장 및 OnOff 출력 
+		// 셋팅모드에서 AMP Lamp 셋업값 얻어온다.
 		if ((stApl[0].SwPushTimer > 1000) || (stApl[2].SwPushTimer > 1000))
 		{
 			if (bSetSt)
@@ -1256,20 +1285,12 @@ mySetA2_Val = stApl[2].SetA;
 			}
 			bStEnab = TRUE;
 		}
+		// 일반 모드에서 APL LAMP On, OFF 처리 
 		else
 		{
 			OnOffAplLamp(CurDayNight);
 			bSetSt = TRUE;
-		}
-		
-		// 낮, 밤이 바뀔 때 변수 초기화 
-		if (CurDayNight != BefCurDayNight)
-		{
-			BefCurDayNight = CurDayNight;
-			bStEnab = TRUE;
-		}
-
-		chkSwTwoTouch();
+		}	
 
     }
 }

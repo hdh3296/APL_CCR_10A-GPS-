@@ -280,5 +280,9 @@ extern bit IsInLED_ON(unsigned char bLedState, unsigned char* Timer);
 
 extern unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
                                      unsigned int Out_mV, unsigned char CurDayNight);
+extern void ChkSwTwoTouch(void);
+extern void ChangPwmCycleRegedit(void);
+extern void Chk232TxErr(void);
+extern void WriteProc(void);
 
 
