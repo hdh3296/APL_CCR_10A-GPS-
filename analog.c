@@ -93,7 +93,7 @@ void ADRead(void)
 }
 
 
-unsigned int myAdBuf[10] = {0,};
+unsigned int myAdBuf[10] = {0,}; // AD값 테스트 용 
 bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 {
 	unsigned long AvrAD;
@@ -148,10 +148,10 @@ void GetMyAD(void)
 			case 0:
 				break;
 			case 3: // 낮 일 때 
-				stApl[SET_DAY].SetA = arInPut_mV[ch]; // 낮 셋팅 값 저장 (0)
+				stApl[SW_DAY].Setting_mV = arInPut_mV[ch]; // 낮 셋팅 값 저장 (0)
 				break;				
 			case 4: // 밤 일 때 	
-				stApl[SET_NIGHT].SetA = arInPut_mV[ch]; // 밤 셋팅값 저장 (2)
+				stApl[SW_NIGHT].Setting_mV = arInPut_mV[ch]; // 밤 셋팅값 저장 (2)
 				break;
 			case 2:
 				CurA_IN_mV = arInPut_mV[ch];

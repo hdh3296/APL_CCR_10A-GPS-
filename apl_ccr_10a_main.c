@@ -540,6 +540,7 @@ void ApaLampOnOff(void)
 
 */
 
+/*
 void SetApaLamp(void)
 {
     if (bAn2_Updated) // A_IN 아날로그 값이 업데이트 됬으면 ?
@@ -556,7 +557,7 @@ void SetApaLamp(void)
     PwmOut(DutyCycle);
     bPwmOn = TRUE;
 }
-
+*/
 /*
 // APL Lamp 출력 함수이다.
 void ApaLampOnOff(void)
@@ -765,37 +766,37 @@ void ChkSetupSw(void)
 	// 낮 스위치 
     if (_SW_SET_HI == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (stApl[0].SetSwCharterTimer > 50)
+        if (stApl[SW_DAY].SetSwCharterTimer > 50)
         {
-            stApl[0].bSetSwPushOK = TRUE;
+            stApl[SW_DAY].bSetSwPushOK = TRUE;
         }
     }
     else  // 스위치를 뗐을 때 !
     {
-        stApl[0].SetSwCharterTimer = 0;
-        if (stApl[0].bSetSwPushOK)
+        stApl[SW_DAY].SetSwCharterTimer = 0;
+        if (stApl[SW_DAY].bSetSwPushOK)
         {
-            stApl[0].bSetSw_UpEdge = TRUE;
+            stApl[SW_DAY].bSetSw_UpEdge = TRUE;
         }
-        stApl[0].bSetSwPushOK = FALSE;
+        stApl[SW_DAY].bSetSwPushOK = FALSE;
     }
 
 	// 밤 스위치 
     if (_SW_SET_LO == SETSW_PUSH) // 스위치를 눌렀을 때 !!!
     {
-        if (stApl[2].SetSwCharterTimer > 50)
+        if (stApl[SW_NIGHT].SetSwCharterTimer > 50)
         {
-            stApl[2].bSetSwPushOK = TRUE;
+            stApl[SW_NIGHT].bSetSwPushOK = TRUE;
         }
     }
     else  // 스위치를 뗐을 때 !
     {
-        stApl[2].SetSwCharterTimer = 0;
-        if (stApl[2].bSetSwPushOK)
+        stApl[SW_NIGHT].SetSwCharterTimer = 0;
+        if (stApl[SW_NIGHT].bSetSwPushOK)
         {
-            stApl[2].bSetSw_UpEdge = TRUE;
+            stApl[SW_NIGHT].bSetSw_UpEdge = TRUE;
         }
-        stApl[2].bSetSwPushOK = FALSE;
+        stApl[SW_NIGHT].bSetSwPushOK = FALSE;
     }
 }
 
@@ -897,11 +898,12 @@ void PwOnAplLamp(void)
         BefCurDayNight = CurDayNight = GetDayEveningNight(); // NONE, DAY , EVENING , NIGHT 값 저장
         if (CurDayNight == NONE)
             DutyCycle = 0x0;
-        else
-            ReadVal((arSavedBuf + (CurDayNight*4)), &stApl[CurDayNight].SetA, &DutyCycle);
-
-        _LAMP_ON = TRUE;
+		else
+			DutyCycle = stApl[CurDayNight].DutyCycle;
+     
+		ChangPwmCycleRegedit(CurDayNight);
         PwmOut(DutyCycle);
+		_LAMP_ON = TRUE;
         CLRWDT();
     }
     while (BeginTimer < 100);
@@ -912,8 +914,7 @@ ULONG GetSetCurrent(unsigned int set_mV, unsigned char CurDayNight)
 {
     ULONG Set_Current;
 
-    if (CurDayNight == NONE) Set_Current = 0;
-    else					Set_Current = ((((ULONG)set_mV) * Multip[CurDayNight]) / 1000);
+    Set_Current = ((((ULONG)set_mV) * Multip[CurDayNight]) / 1000);
 
     return Set_Current;
 }
@@ -930,20 +931,20 @@ unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
 
 
 	
-//	Offset = GetOffSet(Set_Current);	
+//	Offset = GetOffSet(stApl[0].Set_Current);	
 	Offset = 0;
 
-    if (Set_Current > In_Current) 
+    if (stApl[CurDayNight].Set_Current > In_Current) 
     {		
-        if (Set_Current > (In_Current + Offset))  
+        if (stApl[CurDayNight].Set_Current > (In_Current + Offset))  
         {
             if (duty < DUTI_MAX)	duty++;
             else					duty = DUTI_MAX;
         }
     }
-    else if (Set_Current < In_Current)
+    else if (stApl[CurDayNight].Set_Current < In_Current)
     {
-        if ((Set_Current + Offset) < In_Current)
+        if ((stApl[CurDayNight].Set_Current + Offset) < In_Current)
         {
             if (duty > 0)		duty--;
         }
@@ -963,18 +964,20 @@ unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
 
 // 셋팅 스위치 눌렀을 때 APL 램프 셋팅 
 void SetAplLamp(tag_CurDay CurDayNight)
-{
+{	
 	if (bCurA_IN_mVUpd)
 	{
 		bCurA_IN_mVUpd = FALSE;	
-		DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNight].SetA, CurA_IN_mV, CurDayNight);
+		DutyCycle = GetDutyByCmp(stApl[CurDayNight].DutyCycle, stApl[CurDayNight].Setting_mV, CurA_IN_mV, CurDayNight);
+		stApl[CurDayNight].DutyCycle = DutyCycle;
 //		DutyCycle_Avr = AvrDutyCycle(DutyCycle); // Q?? 
-	}	
+	}
+	ChangPwmCycleRegedit(CurDayNight);
 	PwmOut(DutyCycle);
 	_LAMP_ON = TRUE; // LAMP ON	
 }
 
-
+// 현재(실제) APL LAPM On, Off 처리 
 void OnOffAplLamp(tag_CurDay CurDayNight)
 {
 	if (bBlink_DutyOn && (CurDayNight != NONE)) // Blink Led 가 On 일 때
@@ -983,23 +986,23 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 		{
 			bStEnab = FALSE;
 			StartTimer = 0;
-			ReadVal((arSavedBuf + (CurDayNight*4)), &stApl[CurDayNight].SetA, &DutyCycle);
+			ReadVal((arSavedBuf + (CurDayNight*4)), &stApl[CurDayNight].Setting_mV, &stApl[CurDayNight].DutyCycle);
+			DutyCycle = stApl[CurDayNight].DutyCycle;
+			ChangPwmCycleRegedit(CurDayNight);
 			PwmOut(DutyCycle);
 			_LAMP_ON = TRUE; // LAMP ON
-			SetDutyCycle = DutyCycle;
-			
-			
 		}
 		else
 		{
 			if (bCurA_IN_mVUpd)
 			{	
 				bCurA_IN_mVUpd = FALSE;
-				if (Set_Current > JUNG_GIJUN)
+				if (stApl[CurDayNight].Set_Current > JUNG_GIJUN)
 				{
-					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNight].SetA, CurA_IN_mV, CurDayNight);
+					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNight].Setting_mV, CurA_IN_mV, CurDayNight);
 				}
 			}
+			ChangPwmCycleRegedit(CurDayNight);
 			PwmOut(DutyCycle);
 			_LAMP_ON = TRUE; // LAMP ON	
 		}
@@ -1007,8 +1010,8 @@ void OnOffAplLamp(tag_CurDay CurDayNight)
 	}
 	else // Blink Led 가 Off 일 때
 	{
-		DutyCycle = SetDutyCycle;
-		DutyCycle = ((DutyCycle * 3) / 100);		
+		DutyCycle = ((stApl[CurDayNight].DutyCycle * 3) / 100);
+		ChangPwmCycleRegedit(CurDayNight);
 		PwmOut(DutyCycle);	
 		_LAMP_ON = FALSE; // LAMP OFF 
 		bStEnab = TRUE;
@@ -1105,9 +1108,9 @@ void ChkSwTwoTouch(void)
 
 
 // 기준 셋팅값에 따라 PWM 주기 레지스트 설정 값 변경 
-void ChangPwmCycleRegedit(void)
+void ChangPwmCycleRegedit(tag_CurDay CurDayNight)
 {
-	if (Set_Current > JUNG_GIJUN)
+	if (stApl[CurDayNight].Set_Current > JUNG_GIJUN)
 	{
 		if (T2CON != 0x04)
 			T2CON = 0x04; // 2000천 간델라 일 떄 !
@@ -1139,31 +1142,30 @@ void Chk232TxErr(void)
 // 셋업 모드에서 셋업 스위치 누르고 뗐을 때 ! 현재 DutyCycle, SetA값 저장 !
 void WriteProc(void)
 {
-	if (stApl[0].bSetSw_UpEdge)
+	if (stApl[SW_DAY].bSetSw_UpEdge)
 	{
-		if (stApl[0].bWriteEnab)
+		if (stApl[SW_DAY].bWriteEnab)
 		{	
-			WriteVal(DutyCycle, stApl[SET_DAY].SetA, (arSavedBuf + (SET_DAY * 4)));
-			stApl[0].bSetSw_UpEdge = FALSE;
-			stApl[0].bWriteEnab = FALSE;
+			WriteVal(DutyCycle, stApl[SW_DAY].Setting_mV, (arSavedBuf + (SW_DAY * 4)));
+			stApl[SW_DAY].bSetSw_UpEdge = FALSE;
+			stApl[SW_DAY].bWriteEnab = FALSE;
 		}
 	}
-	if (stApl[2].bSetSw_UpEdge)
+	
+	if (stApl[SW_NIGHT].bSetSw_UpEdge)
 	{
-		if (stApl[2].bWriteEnab)
+		if (stApl[SW_NIGHT].bWriteEnab)
 		{			
-			WriteVal(DutyCycle, stApl[SET_NIGHT].SetA, (arSavedBuf + (SET_NIGHT * 4)));
-			stApl[2].bSetSw_UpEdge = FALSE;
-			stApl[2].bWriteEnab = FALSE;
+			WriteVal(DutyCycle, stApl[SW_NIGHT].Setting_mV, (arSavedBuf + (SW_NIGHT * 4)));
+			stApl[SW_NIGHT].bSetSw_UpEdge = FALSE;
+			stApl[SW_NIGHT].bWriteEnab = FALSE;
 		}
 	}	
 
 }
 
-void GetSetInCurrent(void)
-{
-	Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);	
-	
+void GeInCurrent(void)
+{	
 	if(CurA_IN_mV >= 600) 
 		In_Current = (((ULONG)CurA_IN_mV - 600) * 1000) / 60;  // (630 - 600)/60 * 1000 = 500 mA 
 	else 
@@ -1194,9 +1196,14 @@ void main(void)
     TMR0IE = 1;
     SWDTEN = 1;  // Software Controlled Watchdog Timer Enable bit / 1 = Watchdog Timer is on
 
+	// 낮,밤의 저장된 셍팅전압,전류,듀티값을 얻어온다. 
+	for (i=0; i<3; i++)
+	{
+		ReadVal((arSavedBuf + (i*4)), &stApl[i].Setting_mV, &stApl[i].DutyCycle);
+		stApl[i].Set_Current = GetSetCurrent(stApl[i].Setting_mV, i);
+	}
     PwOnAplLamp();
-    Set_Current = GetSetCurrent(stApl[CurDayNight].SetA, CurDayNight);
-    SetDutyCycle = DutyCycle;
+    
 
     //LoadSetupValue();
     modesw = 0xff;
@@ -1213,10 +1220,9 @@ void main(void)
     {
         CLRWDT();
 		
-mySetA0_Val = stApl[0].SetA;	
-mySetA2_Val = stApl[2].SetA;
-
-		ChangPwmCycleRegedit(); 
+mySetA0_Val = stApl[0].Setting_mV;	
+mySetA2_Val = stApl[2].Setting_mV;
+ 
 		Chk232TxErr();		
 
 		// Gps 232Rx 데이타 수신
@@ -1227,8 +1233,6 @@ mySetA2_Val = stApl[2].SetA;
         }
 		GpsPPS1Chk(); // GPS Puls 체크
 
-		//  셋업모드의 PwmDutyCycle, 셋팅값 저장  
-		WriteProc();
 
 		// 낮, 밤 체크 
 		// 밤 일때 NIG LED ON
@@ -1242,10 +1246,15 @@ mySetA2_Val = stApl[2].SetA;
 			bStEnab = TRUE;
 		}		
 
+
 		// 스위치가 On 및 Edge 여부 체크 
         ChkSetupSw(); 
 		// 스위치 Two Touch 여부 체크 
 		ChkSwTwoTouch();
+		
+		//  셋업모드의 PwmDutyCycle, 셋팅값 저장  
+		WriteProc();
+
 
 		// AD 처리 
         if(IsUdtAd(arInPut_mV, arIs_AdUpd, AdChSel)) // input AD 값 얻음.
@@ -1254,9 +1263,9 @@ mySetA2_Val = stApl[2].SetA;
 			GetMyAD();
 			
 			// 채널 변경 
-			if(stApl[0].bSetSwPushOK)		AdChSel = ChangeAdChSel(AdChSel, 3);
-			else if(stApl[2].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
-			else							AdChSel = ChangeAdChSel(AdChSel, 2);	
+			if(stApl[SW_DAY].bSetSwPushOK)			AdChSel = ChangeAdChSel(AdChSel, 3);
+			else if(stApl[SW_NIGHT].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
+			else									AdChSel = ChangeAdChSel(AdChSel, 2);	
 			Set_AdCh(AdChSel);
 			
 			bAdConversion = FALSE;
@@ -1264,10 +1273,10 @@ mySetA2_Val = stApl[2].SetA;
         }
 
 		// 현재 Setting 및 In 전류 값 가져오기 
-		GetSetInCurrent();	
+		GeInCurrent();	
 		
 		// 셋팅모드에서 AMP Lamp 셋업값 얻어온다.
-		if ((stApl[0].SwPushTimer > 1000) || (stApl[2].SwPushTimer > 1000))
+		if ((stApl[SW_DAY].SwPushTimer > 1000) || (stApl[SW_NIGHT].SwPushTimer > 1000))
 		{
 			if (bSetSt)
 			{
@@ -1279,17 +1288,17 @@ mySetA2_Val = stApl[2].SetA;
 			{
 				if(SetStTimer > 300)
 				{
-					if(stApl[0].bSetSwPushOK)
+					if(stApl[SW_DAY].bSetSwPushOK)
 					{
-						Set_Current = GetSetCurrent(stApl[SET_DAY].SetA, SET_DAY);
-						SetAplLamp(SET_DAY);
-						stApl[0].bWriteEnab = TRUE;
+						stApl[SW_DAY].Set_Current = GetSetCurrent(stApl[SW_DAY].Setting_mV, SW_DAY);
+						SetAplLamp(SW_DAY);
+						stApl[SW_DAY].bWriteEnab = TRUE;
 					}
-					if(stApl[2].bSetSwPushOK)
+					if(stApl[SW_NIGHT].bSetSwPushOK)
 					{
-						Set_Current = GetSetCurrent(stApl[SET_NIGHT].SetA, SET_NIGHT);
-						SetAplLamp(SET_NIGHT);
-						stApl[2].bWriteEnab = TRUE;
+						stApl[SW_NIGHT].Set_Current = GetSetCurrent(stApl[SW_NIGHT].Setting_mV, SW_NIGHT);
+						SetAplLamp(SW_NIGHT);
+						stApl[SW_NIGHT].bWriteEnab = TRUE;
 					}					
 				}
 			}
