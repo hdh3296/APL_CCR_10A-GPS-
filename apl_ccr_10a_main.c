@@ -986,6 +986,8 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 			bStEnab = FALSE;
 			StDelayTimer = 0; 
 
+//			ReadVal((arSavedBuf + (CurDayNig*4)), &stApl[CurDayNig].Setting_mV, &stApl[CurDayNig].DutyCycle);
+//			stApl[CurDayNig].Set_Current = GetSetCurrent(stApl[CurDayNig].Setting_mV, CurDayNig);
 			DutyCycle = stApl[CurDayNig].DutyCycle;
 			ChangPwmCycleRegedit(CurDayNig);
 			PwmOut(DutyCycle);			
@@ -1001,8 +1003,8 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 					
 					if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
 						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
-					//else
-					//	DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 300);
+					else
+						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 100);
 				}
 				ChangPwmCycleRegedit(CurDayNig);
 				PwmOut(DutyCycle);
@@ -1013,8 +1015,9 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 	else // Blink Led 가 Off 일 때
 	{
 		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
-		_LAMP_ON = FALSE; // LAMP OFF 		
-		DutyCycle = ((stApl[CurDayNig].DutyCycle * 3) / 100);
+		_LAMP_ON = FALSE; // LAMP OFF 
+		
+		DutyCycle = ((stApl[CurDayNig].DutyCycle * 7) / 100);
 		ChangPwmCycleRegedit(CurDayNig);		
 		PwmOut(DutyCycle);	
 		bStEnab = TRUE;
