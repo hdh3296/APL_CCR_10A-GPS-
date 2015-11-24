@@ -103,7 +103,7 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
     {		
         SumAD = SumAD + (unsigned long)ADBuf; // 12ºñÆ® AD 
 		SumCnt++;
-		if (bSettingMode) 	nSumCnt = 100;
+		if (bSettingMode) 	nSumCnt = 10;
 		else 				nSumCnt = 10;
 
         if (SumCnt >= nSumCnt)

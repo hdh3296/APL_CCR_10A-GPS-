@@ -106,7 +106,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define     MSEC_L    0x18
 
 // LED 깜빡이는 1싸이클에 대하여 ON 듀티 시간(msec) 값을 구한다.
-#define		COUNT_MIN	20      	// 1분당  LED ON 횟수
+#define		COUNT_MIN	40      	// 1분당  LED ON 횟수
 #define		LED_ON_DUTY_RATIO	50	// LED ON 듀티 비(%)
 #define		LED_CYCLE_MSEC		(60000 / (COUNT_MIN))
 // Lamp Blink에서의 On 주기 시간(ms) 
@@ -138,7 +138,7 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define	OFF_runled1	1
 #endif
 
-#define JUNG_GIJUN 2000
+#define JUNG_GIJUN 1500
 
 
 #define		LED_ONOFF_CNT		20

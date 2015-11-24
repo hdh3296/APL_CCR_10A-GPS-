@@ -1007,7 +1007,7 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 					if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
 						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
 					else
-						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 100);
+						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 200);
 				}
 				ChangPwmCycleRegedit(CurDayNig);
 				PwmOut(DutyCycle);
