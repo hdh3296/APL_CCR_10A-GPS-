@@ -990,11 +990,14 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 //			stApl[CurDayNig].Set_Current = GetSetCurrent(stApl[CurDayNig].Setting_mV, CurDayNig);
 			DutyCycle = stApl[CurDayNig].DutyCycle;
 			ChangPwmCycleRegedit(CurDayNig);
-			PwmOut(DutyCycle);			
+			PwmOut(DutyCycle);	
+
+			if (stApl[CurDayNig].Set_Current > JUNG_GIJUN) StDelayTime = 0;
+			else	StDelayTime = 100;	
 		}
 		else
 		{
-			if (StDelayTimer >= 0)
+			if (StDelayTimer >= StDelayTime)
 			{
 				if (bCurA_IN_mV_Upd)
 				{	
@@ -1028,87 +1031,87 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 void ChkSwTwoTouch(void)
 {	
 	// Day
-	if (stApl[0].bSetSwPushOK)
+	if (stApl[SW_DAY].bSetSwPushOK)
 	{
-		if (stApl[0].SwPushTimer < 500)
+		if (stApl[SW_DAY].SwPushTimer < 500)
 		{
-			stApl[0].bSwSlightPush = TRUE;
+			stApl[SW_DAY].bSwSlightPush = TRUE;
 		}
 		else
 		{
-			stApl[0].bSwSlightPush = FALSE;
+			stApl[SW_DAY].bSwSlightPush = FALSE;
 		}
 	}
 	else
 	{
-		stApl[0].SwPushTimer = 0;
-		if (stApl[0].bSwSlightPush)
+		stApl[SW_DAY].SwPushTimer = 0;
+		if (stApl[SW_DAY].bSwSlightPush)
 		{
-			stApl[0].SwTouchCnt++;
+			stApl[SW_DAY].SwTouchCnt++;
 		}
-		stApl[0].bSwSlightPush = FALSE;
+		stApl[SW_DAY].bSwSlightPush = FALSE;
 	}
 
-	if (stApl[0].SwTouchCnt)
+	if (stApl[SW_DAY].SwTouchCnt)
 	{
-		if (stApl[0].SwTouchCntTimer < 1000)
+		if (stApl[SW_DAY].SwTouchCntTimer < 1000)
 		{
-			if (stApl[0].SwTouchCnt >= 2)
+			if (stApl[SW_DAY].SwTouchCnt >= 2) // 투 터치 했어 
 			{			
-				stApl[0].bBlinkEnab = !stApl[0].bBlinkEnab; 
-				stApl[0].SwTouchCnt = 0;
+				if(CurDayNight == SW_DAY) stApl[SW_DAY].bBlinkEnab = !stApl[SW_DAY].bBlinkEnab; 
+				stApl[SW_DAY].SwTouchCnt = 0;
 			}
 		}
 		else
 		{
-			stApl[0].SwTouchCnt = 0;
+			stApl[SW_DAY].SwTouchCnt = 0;
 		}
 	}
 	else
 	{
-		stApl[0].SwTouchCntTimer = 0;
+		stApl[SW_DAY].SwTouchCntTimer = 0;
 	}
 
 	// Night 
-	if (stApl[2].bSetSwPushOK)
+	if (stApl[SW_NIGHT].bSetSwPushOK)
 	{
-		if (stApl[2].SwPushTimer < 500)
+		if (stApl[SW_NIGHT].SwPushTimer < 500)
 		{
-			stApl[2].bSwSlightPush = TRUE;
+			stApl[SW_NIGHT].bSwSlightPush = TRUE;
 		}
 		else
 		{
-			stApl[2].bSwSlightPush = FALSE;
+			stApl[SW_NIGHT].bSwSlightPush = FALSE;
 		}
 	}
 	else
 	{
-		stApl[2].SwPushTimer = 0;
-		if (stApl[2].bSwSlightPush)
+		stApl[SW_NIGHT].SwPushTimer = 0;
+		if (stApl[SW_NIGHT].bSwSlightPush)
 		{
-			stApl[2].SwTouchCnt++;
+			stApl[SW_NIGHT].SwTouchCnt++;
 		}
-		stApl[2].bSwSlightPush = FALSE;
+		stApl[SW_NIGHT].bSwSlightPush = FALSE;
 	}
 
-	if (stApl[2].SwTouchCnt)
+	if (stApl[SW_NIGHT].SwTouchCnt)
 	{
-		if (stApl[2].SwTouchCntTimer < 1000)
+		if (stApl[SW_NIGHT].SwTouchCntTimer < 1000)
 		{
-			if (stApl[2].SwTouchCnt >= 2)
+			if (stApl[SW_NIGHT].SwTouchCnt >= 2) 
 			{			
-				stApl[2].bBlinkEnab = !stApl[2].bBlinkEnab; 
-				stApl[2].SwTouchCnt = 0;
+				if(CurDayNight == SW_NIGHT) stApl[SW_NIGHT].bBlinkEnab = !stApl[SW_NIGHT].bBlinkEnab; 
+				stApl[SW_NIGHT].SwTouchCnt = 0;
 			}
 		}
 		else
 		{
-			stApl[2].SwTouchCnt = 0;
+			stApl[SW_NIGHT].SwTouchCnt = 0;
 		}
 	}
 	else
 	{
-		stApl[2].SwTouchCntTimer = 0;
+		stApl[SW_NIGHT].SwTouchCntTimer = 0;
 	}	
 }
 
@@ -1291,6 +1294,8 @@ void main(void)
 		// 셋팅모드에서 AMP Lamp 셋업값 얻어온다.
 		if ((stApl[SW_DAY].SwPushTimer > 1000) || (stApl[SW_NIGHT].SwPushTimer > 1000))
 		{
+			bSettingMode = TRUE;	
+			
 			if (bSetSt)
 			{
 				_LAMP_ON = TRUE; // LAMP ON
@@ -1325,6 +1330,7 @@ void main(void)
 		{
 			if((stApl[0].bWriteEnab == FALSE) && (stApl[2].bWriteEnab == FALSE))
 			{
+				bSettingMode = FALSE;
 				OnOffAplLamp(CurDayNight);
 				bSetSt = TRUE;
 			}

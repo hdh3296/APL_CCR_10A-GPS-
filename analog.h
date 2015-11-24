@@ -31,6 +31,7 @@ unsigned	long    SumAD	= 0;
 unsigned 	long    InPutAD = 0;
 unsigned 	int	    ADBuf 	= 0;
 unsigned	int	    SumCnt	= 0;
+unsigned	int	    nSumCnt	= 0;
 unsigned    int   	AdChSel	= 0;
 
 unsigned    int     AdValue[nAD_MAX_CHANEL]; // 채널별 Ad 값 저장 버퍼 

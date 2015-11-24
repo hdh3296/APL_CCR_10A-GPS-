@@ -106,6 +106,7 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
         SumAD = SumAD + (unsigned long)ADBuf; // 12ºñÆ® AD 
 		SumCnt++;
 
+
         if (SumCnt >= 10)
         {
 			AdVal = (((SumAD * 1000) / 819) / SumCnt);

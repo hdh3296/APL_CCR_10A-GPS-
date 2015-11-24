@@ -7,8 +7,6 @@
 #define	FALSE	0
 #endif
 
-
-
 extern volatile bit RB0x                @ ((unsigned)&PORTB*8)+0;
 extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 
@@ -104,9 +102,6 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 #define NoUse_M3_TRIS 			TRISE2	
 
 
-
-
-
 #define     MSEC_H    0xfc
 #define     MSEC_L    0x18
 
@@ -152,13 +147,6 @@ extern volatile bit RB1x                @ ((unsigned)&PORTB*8)+1;
 //#define		NIGHT_DAY_VOLT		135
 
 
-
-
-
-
-
-
-
 unsigned    char  	MainTimer = 0;
 unsigned    char	msec100 = 0;
 
@@ -183,8 +171,6 @@ unsigned	int		LedOnDuty_Msec;
 unsigned	long	ZeroTimer = 0;
 unsigned	long	l_hour, l_min, l_sec;
 
-
-
 unsigned    char	NightVolt = 0;
 unsigned    char	NightDayVolt = 0;
 
@@ -204,25 +190,7 @@ bit		bBlink_DutyOn = 0;
 
 
 unsigned int BeginTimer = 0;
-
-
-
-
-
-
-
-
-
-
 unsigned char InDayTimer = 0;
-
-
-
-
-
-
-
-
 
 
 
@@ -243,17 +211,9 @@ volatile const unsigned char  arSavedBuf[WRSIZE] = {0, };
 
 
 
-
-
-
 unsigned int SetStTimer = 0;
 unsigned int StDelayTimer = 0;
-
-
-
-
-
-
+unsigned int StDelayTime = 0;
 
 
 

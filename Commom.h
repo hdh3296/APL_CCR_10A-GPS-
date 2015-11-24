@@ -59,8 +59,6 @@ tag_Apl		stApl[3] = {
 
 
 
-
-
 unsigned int CurA_IN_mV = 0;
 unsigned int CurV_IN = 0;
 bit bCurA_IN_mV_Upd = FALSE;
@@ -71,7 +69,8 @@ ULONG In_Current;  // 변환된 입력 피드백 전류 값
 
 bit bSetSt= FALSE;
 bit bStEnab = FALSE;
-
+bit bStTwoEnab = FALSE;
+bit bSettingMode = FALSE;
 
 extern void ReadVal(volatile const UCHAR* SavedBuf, UINT* pSetA_Volt, UINT* pDutyCycle);
 extern ULONG GetSetCurrent(unsigned int set_mV, unsigned char CurDayNight);
