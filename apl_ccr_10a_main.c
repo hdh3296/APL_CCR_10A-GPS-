@@ -1020,7 +1020,10 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
 		_LAMP_ON = FALSE; // LAMP OFF 
 		
-		DutyCycle = ((stApl[CurDayNig].DutyCycle * 7) / 100);
+		DutyCycle = ((stApl[CurDayNig].DutyCycle * 6) / 100);
+		if (DutyCycle >= 20) DutyCycle = DutyCycle + 10;
+		else if (DutyCycle >= 10) DutyCycle = DutyCycle - 1;
+		else DutyCycle = DutyCycle + 1;
 		ChangPwmCycleRegedit(CurDayNig);		
 		PwmOut(DutyCycle);	
 		bStEnab = TRUE;
@@ -1302,7 +1305,7 @@ void main(void)
 				bSetSt = FALSE;
 				DutyCycle = 0;
 				SetStTimer = 0;
-				ChangPwmCycleRegedit(2);
+				T2CON = 0x06; // 2000천 간델라 일 떄 !
 				PwmOut(DutyCycle);	
 			}
 			else
