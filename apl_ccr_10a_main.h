@@ -247,6 +247,8 @@ volatile const unsigned char  arSavedBuf[WRSIZE] = {0, };
 
 
 unsigned int SetStTimer = 0;
+unsigned int StDelayTimer = 0;
+
 
 
 

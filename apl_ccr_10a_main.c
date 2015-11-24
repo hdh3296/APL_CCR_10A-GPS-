@@ -979,10 +979,12 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 {
 	if (bBlink_DutyOn && (CurDayNig != NONE)) // Blink Led 가 On 일 때
 	{	
+		_LED_AplLampState = ON_runled1; // Run 상태 LED On
 		_LAMP_ON = TRUE; // LAMP ON
 		if (bStEnab)
 		{
 			bStEnab = FALSE;
+			StDelayTimer = 0; 
 
 			DutyCycle = stApl[CurDayNig].DutyCycle;
 			ChangPwmCycleRegedit(CurDayNig);
@@ -990,30 +992,33 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 		}
 		else
 		{
-			if (bCurA_IN_mV_Upd)
-			{	
-				bCurA_IN_mV_Upd = FALSE;
-				In_Current = GetInCurrent(CurA_IN_mV);	// 현재 Setting 및 In 전류 값 가져오기 
-				
-				if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
-					DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
-				//else
-					//DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 500);
-			}
-			ChangPwmCycleRegedit(CurDayNig);
-			PwmOut(DutyCycle);
-			
+			if (StDelayTimer >= 0)
+			{
+				if (bCurA_IN_mV_Upd)
+				{	
+					bCurA_IN_mV_Upd = FALSE;
+					In_Current = GetInCurrent(CurA_IN_mV);	// 현재 Setting 및 In 전류 값 가져오기 
+					
+					if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
+						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
+					//else
+					//	DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 300);
+				}
+				ChangPwmCycleRegedit(CurDayNig);
+				PwmOut(DutyCycle);
+			}			
 		}
-		_LED_AplLampState = ON_runled1; // Run 상태 LED On
+		
 	}
 	else // Blink Led 가 Off 일 때
 	{
-		_LAMP_ON = FALSE; // LAMP OFF 
+		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
+		_LAMP_ON = FALSE; // LAMP OFF 		
 		DutyCycle = ((stApl[CurDayNig].DutyCycle * 3) / 100);
 		ChangPwmCycleRegedit(CurDayNig);		
 		PwmOut(DutyCycle);	
 		bStEnab = TRUE;
-		_LED_AplLampState = OFF_runled1; // Run 상태 LED Off
+		
 	}
 }
 
@@ -1148,6 +1153,10 @@ void WriteProc(void)
 			stApl[SW_DAY].bSetSw_UpEdge = FALSE;
 			stApl[SW_DAY].bWriteEnab = FALSE;
 		}
+		else
+		{
+			stApl[SW_DAY].bSetSw_UpEdge = FALSE;
+		}
 	}
 	
 	if (stApl[SW_NIGHT].bSetSw_UpEdge)
@@ -1158,6 +1167,10 @@ void WriteProc(void)
 			stApl[SW_NIGHT].bSetSw_UpEdge = FALSE;
 			stApl[SW_NIGHT].bWriteEnab = FALSE;
 		}
+		else
+		{
+			stApl[SW_NIGHT].bSetSw_UpEdge = FALSE;
+		}		
 	}	
 
 }
@@ -1281,7 +1294,7 @@ void main(void)
 				bSetSt = FALSE;
 				DutyCycle = 0;
 				SetStTimer = 0;
-				ChangPwmCycleRegedit(SW_NIGHT);
+				ChangPwmCycleRegedit(2);
 				PwmOut(DutyCycle);	
 			}
 			else
@@ -1350,6 +1363,9 @@ void interrupt isr(void)
             InDayTimer++;
 		if (SetStTimer < 0xffff)
             SetStTimer++;
+		if (StDelayTimer < 0xffff)
+            StDelayTimer++;
+		
 
         msec100++;
         if (msec100 > 100)
