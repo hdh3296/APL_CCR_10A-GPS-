@@ -36,7 +36,7 @@ void	InitAD(void)
     bAn6_Updated = 0;
     bAn7_Updated = 0;
 
-	AdChSel = 1; // 채널 초기값
+	BefAdChSel = AdChSel = 2; // 채널 초기값 A_IN
 }
 
 
@@ -100,28 +100,40 @@ bit	IsUdtAd(UINT* arInPut_mV, UCHAR* arIs_AdUpd, UCHAR AdChSel)
 	unsigned char i;
 	
     if (bAdConversion)
-    {		
-        SumAD = SumAD + (unsigned long)ADBuf; // 12비트 AD 
-		SumCnt++;
-		if (bSettingMode) 	nSumCnt = 10;
-		else 				nSumCnt = 10;
+    {
+		if (bAdCalcEnable == FALSE)
+		{
+			AdCalcWaitCnt++;
+			if (AdCalcWaitCnt >= 3)
+			{
+				bAdCalcEnable = TRUE;
+				AdCalcWaitCnt = 0;
+			}
+		}
+		else
+		{	
+	        SumAD = SumAD + (unsigned long)ADBuf; // 12비트 AD 
+			SumCnt++;
+			if (bSettingMode) 	nSumCnt = 10;
+			else 				nSumCnt = 10;
 
-        if (SumCnt >= nSumCnt)
-        {
-			AdVal = (((SumAD * 1000) / 819) / SumCnt);
-			if (AdVal >= 10)	arInPut_mV[AdChSel] = (unsigned int)(AdVal - 10); // 12비트 AD 기준 최대 5V에서 AD 값을 mV로 환산 !!! 
-			else arInPut_mV[AdChSel] = 0;
-			arIs_AdUpd[AdChSel] = TRUE;
-			
-            SumAD = 0;
-            SumCnt = 0;
-			
-			return TRUE;       
-        }
+	        if (SumCnt >= nSumCnt)
+	        {
+				AdVal = (((SumAD * 1000) / 819) / SumCnt);
+				if (AdVal >= 10)	arInPut_mV[AdChSel] = (unsigned int)(AdVal - 10); // 12비트 AD 기준 최대 5V에서 AD 값을 mV로 환산 !!! 
+				else arInPut_mV[AdChSel] = 0;
+				arIs_AdUpd[AdChSel] = TRUE;
+				
+	            SumAD = 0;
+	            SumCnt = 0;
+				
+				return TRUE;       
+	        }
+		}
+		
         bAdConversion = FALSE;
         DONE = 1;
     }
-
     return(FALSE);
 }
 

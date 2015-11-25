@@ -957,6 +957,9 @@ unsigned int GetDutyByCmp(unsigned int duty, unsigned int set_mV,
 }
 
 
+
+
+
 // 셋팅 스위치 눌렀을 때 APL 램프 셋팅 
 void OnSetAplLamp(tag_CurDay Sw_DayNig)
 {	
@@ -1007,7 +1010,7 @@ void OnOffAplLamp(tag_CurDay CurDayNig)
 					if (stApl[CurDayNig].Set_Current > JUNG_GIJUN)
 						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 0);
 					else
-						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 200);
+						DutyCycle = GetDutyByCmp(DutyCycle, stApl[CurDayNig].Setting_mV, CurDayNig, 100);
 				}
 				ChangPwmCycleRegedit(CurDayNig);
 				PwmOut(DutyCycle);
@@ -1279,7 +1282,8 @@ void main(void)
 
 
 		// AD 처리 
-        if(IsUdtAd(arInPut_mV, arIs_AdUpd, AdChSel)) // input AD 값 얻음.
+		bUdtAd = IsUdtAd(arInPut_mV, arIs_AdUpd, AdChSel);
+        if(bUdtAd) // input AD 값 얻음.
         {
 			// 각 AD 값이 Updated 이면, 각 관련 변수에 저장 한다. 
 			GetMyAD();
@@ -1289,6 +1293,14 @@ void main(void)
 			else if(stApl[SW_NIGHT].bSetSwPushOK)	AdChSel = ChangeAdChSel(AdChSel, 4);
 			else									AdChSel = ChangeAdChSel(AdChSel, 1);	
 			Set_AdCh(AdChSel);
+
+			// AD 채널이 변경 되었다. 
+			if (AdChSel != BefAdChSel)
+			{
+				bAdCalcEnable = FALSE;
+				AdCalcWaitCnt = 0;
+				BefAdChSel = AdChSel;
+			}
 			
 			bAdConversion = FALSE;
 			DONE = 1;
@@ -1353,8 +1365,8 @@ void interrupt isr(void)
         TMR0H = MSEC_H;
 
         
-		if ((CurDayNight == DAY) && (stApl[0].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
-		else if ((CurDayNight == NIGHT) && (stApl[2].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
+		if ((CurDayNight == DAY) && (stApl[SW_DAY].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
+		else if ((CurDayNight == NIGHT) && (stApl[SW_NIGHT].bBlinkEnab == FALSE))	bBlink_DutyOn = TRUE;
 		else bBlink_DutyOn = IsBlink_On();
 
         Com1SerialTime++;
@@ -1392,10 +1404,10 @@ void interrupt isr(void)
 
         }
 
-		if(stApl[0].SwPushTimer < 0xffff) stApl[0].SwPushTimer++;
-		if(stApl[0].SwTouchCntTimer < 0xffff) stApl[0].SwTouchCntTimer++;
-		if(stApl[2].SwPushTimer < 0xffff) stApl[2].SwPushTimer++;
-		if(stApl[2].SwTouchCntTimer < 0xffff) stApl[2].SwTouchCntTimer++;		
+		if(stApl[SW_DAY].SwPushTimer < 0xffff) stApl[SW_DAY].SwPushTimer++;
+		if(stApl[SW_DAY].SwTouchCntTimer < 0xffff) stApl[SW_DAY].SwTouchCntTimer++;
+		if(stApl[SW_NIGHT].SwPushTimer < 0xffff) stApl[SW_NIGHT].SwPushTimer++;
+		if(stApl[SW_NIGHT].SwTouchCntTimer < 0xffff) stApl[SW_NIGHT].SwTouchCntTimer++;		
     }
 
     // GPS Rx2 통신 인터럽트
@@ -1450,7 +1462,7 @@ void interrupt isr(void)
     if (ADIF)
     {
         ADIF = 0;
-        if (!bAdConversion)
+        if (bAdConversion == FALSE)
         {
             ADBuf = ADRES;
             bAdConversion = TRUE;
