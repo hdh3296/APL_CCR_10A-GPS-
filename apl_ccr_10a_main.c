@@ -1127,8 +1127,8 @@ void ChangPwmCycleRegedit(tag_CurDay CurDayNight)
 {
 	if (stApl[CurDayNight].Set_Current > JUNG_GIJUN)
 	{
-		if (T2CON != 0x04)
-			T2CON = 0x04; // 2000천 간델라 일 떄 !
+		if (T2CON != 0x06)
+			T2CON = 0x06; // 2000천 간델라 일 떄 !
 	}
 	else
 	{
